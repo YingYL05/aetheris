@@ -1642,12 +1642,14 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const grp = new T.Group();
     grp.position.set(P.x, 0, P.z); grp.rotation.y = -ang; world.add(grp);
     const w2 = w / 2;
-    const pts = [[16, -w2], [0.5 * L, -w2], [0.56 * L, -w2 - B], [0.8 * L, -w2 - B], [0.86 * L, -w2], [L - w2 * 1.2, -w2], [L, -w2 * 0.3],
-      [L, w2 * 0.3], [L - w2 * 1.2, w2], [0.86 * L, w2], [0.8 * L, w2 + B], [0.56 * L, w2 + B], [0.5 * L, w2], [16, w2]];
-    const deckShape = new T.Shape(pts.map(([u, v]) => new T.Vector2(u, v)));
-    // The shipyard's basin is cut right through its deck
+    // The shipyard's basin runs out through a square tip as a channel to the sea
     const BASIN = [30, 52, 5.8];
-    if (kind === 'shipyard') deckShape.holes.push(new T.Path([[BASIN[0], -BASIN[2]], [BASIN[1], -BASIN[2]], [BASIN[1], BASIN[2]], [BASIN[0], BASIN[2]]].map(([u, v]) => new T.Vector2(u, v))));
+    const tip = kind === 'shipyard'
+      ? [[L, -w2], [L, -BASIN[2]], [BASIN[0], -BASIN[2]], [BASIN[0], BASIN[2]], [L, BASIN[2]], [L, w2]]
+      : [[L - w2 * 1.2, -w2], [L, -w2 * 0.3], [L, w2 * 0.3], [L - w2 * 1.2, w2]];
+    const pts = [[16, -w2], [0.5 * L, -w2], [0.56 * L, -w2 - B], [0.8 * L, -w2 - B], [0.86 * L, -w2], ...tip,
+      [0.86 * L, w2], [0.8 * L, w2 + B], [0.56 * L, w2 + B], [0.5 * L, w2], [16, w2]];
+    const deckShape = new T.Shape(pts.map(([u, v]) => new T.Vector2(u, v)));
     const deckGeo = new T.ExtrudeGeometry(deckShape, { depth: ARM_TOP - 0.2, bevelEnabled: false });
     deckGeo.rotateX(Math.PI / 2); deckGeo.translate(0, ARM_TOP, 0);
     grp.add(shade(new T.Mesh(deckGeo, [M.ceramic, M.trim])));
@@ -1699,11 +1701,11 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       [-1, 1].forEach((k) => box(0.5, 8, 0.5, M.trim, 21, ARM_TOP, k * (w2 - 1), grp));
       box(0.7, 0.6, w, M.trim, 21, ARM_TOP + 8, 0, grp);
     } else if (kind === 'shipyard') {
-      // Enclosed shipyard: walls round the basin, a translucent roof on ribs, a sea gate, and a gantry on rails.
-      // A Leviathan sits inside for refit (added with the fleet).
+      // Enclosed shipyard: walls round the basin, a translucent roof on ribs, a lift gate to the sea channel, and a
+      // gantry on rails. A Leviathan sits inside for refit (added with the fleet) and goes out for sea trials.
       const [u0, u1, hv] = BASIN, um = (u0 + u1) / 2, len = u1 - u0, H = 8;
       const [hx, hz] = toWorld(um, 0);
-      HARBOR = { x: hx, z: hz, yaw: Math.atan2(ux, uz) };
+      HARBOR = { x: hx, z: hz, yaw: Math.atan2(ux, uz), ux, uz, prev: 0 };
       // The far wall is solid; the side facing the viewer is a glass curtain over a low base, so the ship shows
       box(len + 1.2, H, 0.6, M.ceramic, um, ARM_TOP, -(hv + 0.3), grp);
       box(len + 1.2, 0.5, 0.6, M.glass, um, ARM_TOP + H * 0.6, -(hv + 0.32), grp);
@@ -1713,7 +1715,13 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       for (let u = u0 - 0.3; u <= u1 + 0.4; u += 3) box(0.25, H - 1.4, 0.3, M.trim, u, ARM_TOP + 1.4, hv + 0.3, grp);
       [-1, 1].forEach((sv) => box(len + 1.2, 0.3, 0.9, M.steel, um, ARM_TOP + H, sv * (hv + 0.3), grp));
       box(0.6, H, hv * 2 + 1.2, M.ceramic, u0 - 0.3, ARM_TOP, 0, grp);
-      box(0.6, H + 1.6, hv * 2 + 1.2, M.trim, u1 + 0.3, -0.4, 0, grp);
+      // Sea gate: a lift door between two gate towers, rising into the header to let the ship out
+      [-1, 1].forEach((sv) => box(1.2, H + 7, 1.2, M.ceramic, u1 + 0.3, ARM_TOP, sv * (hv + 0.9), grp));
+      box(1.4, 1, hv * 2 + 3, M.trim, u1 + 0.3, ARM_TOP + H + 6, 0, grp);
+      const gate = box(0.5, H + 1.6, hv * 2 + 0.2, M.trim, u1 + 0.3, -0.4, 0, grp);
+      const gateBand = new T.Mesh(new T.BoxGeometry(0.54, 0.3, hv * 2 + 0.24), M.accent);
+      gateBand.position.y = -(H + 1.6) / 2 + 2.4; gate.add(gateBand);
+      HARBOR.gate = gate; HARBOR.gateY = gate.position.y;
       const roof = new T.Mesh(new T.BoxGeometry(len + 1.2, 0.2, hv * 2 + 1.2), M.canopy);
       roof.position.set(um, ARM_TOP + H + 0.5, 0); roof.renderOrder = 3; grp.add(roof);
       for (let u = u0 + 1; u < u1; u += 3) box(0.3, 0.4, hv * 2 + 1.2, M.trim, u, ARM_TOP + H + 0.3, 0, grp);
@@ -2278,6 +2286,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     refit.children.filter((c) => c.isLineSegments).forEach((c) => refit.remove(c));
     refit.position.set(HARBOR.x, 0.05, HARBOR.z); refit.rotation.y = HARBOR.yaw;
     world.add(refit);
+    HARBOR.refit = refit;
   }
   const wideGyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
     const a = k / 12 * Math.PI * 2;
@@ -2527,6 +2536,17 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(stage);
 
   function step(dt, now) {
+    // Shipyard: the gate lifts, the refit Leviathan sails out down the channel for sea trials, waits, and comes back
+    if (HARBOR && HARBOR.refit) {
+      const c = (now / 1000) % 48, pc = HARBOR.prev;
+      const open = c < 6 ? 0 : c < 9 ? (c - 6) / 3 : c < 39 ? 1 : c < 42 ? 1 - (c - 39) / 3 : 0;
+      const out = c < 9 ? 0 : c < 21 ? smooth((c - 9) / 12) : c < 27 ? 1 : c < 39 ? 1 - smooth((c - 27) / 12) : 0;
+      HARBOR.gate.position.y = HARBOR.gateY + smooth(open) * 7;
+      HARBOR.refit.position.set(HARBOR.x + HARBOR.ux * out * 34, 0.05, HARBOR.z + HARBOR.uz * out * 34);
+      if (pc < 9 && c >= 9) log('SHIPYARD', 'Sea gate open · Leviathan out for sea trials');
+      if (pc < 39 && c >= 39) log('SHIPYARD', 'Leviathan back in the refit basin · gate closing');
+      HARBOR.prev = c;
+    }
     // City traffic
     trains.forEach((tr) => {
       tr.a += dt * 0.22 * tr.dir;

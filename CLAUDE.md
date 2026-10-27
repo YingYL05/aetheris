@@ -61,7 +61,9 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   half stays low under the landing glider's climb-out. Piers: flight (0 deg: landing runway at `RZ` and the
   catapult track at `CAT_Z` side by side, hangars, control tower; the user wants runways in one section), rectenna,
   residential, arcology, foundry, and an enclosed shipyard (basin cut through the deck, walls, translucent roof,
-  sea gate, gantry; the viewer-facing wall is a glass curtain so the refit Leviathan at `HARBOR` shows). The wave
+  a lift gate between two towers, gantry; the viewer-facing wall is a glass curtain so the refit Leviathan at
+  `HARBOR` shows). The basin runs out through the pier's square tip as a channel to the sea (user: the end must be a
+  door to the ocean); every 48 s the gate lifts and the Leviathan sails out for sea trials and back. The wave
   farm sits in the bay between the flight and rectenna piers. Whites are toned down (ceramic #e3e8ee, hemi 0.88)
   after the user found the city too bright. Towers use `tower()`: one striped glazing mesh (`M.bands`, alpha-map
   stripes) instead of stacked bands, to keep the mesh count down. The mainland sits at the map edge (coast ~x -300,
