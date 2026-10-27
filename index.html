@@ -1644,7 +1644,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     grp.position.set(P.x, 0, P.z); grp.rotation.y = -ang; world.add(grp);
     const w2 = w / 2;
     // The shipyard's basin runs out through a square tip as a channel to the sea
-    const BASIN = [30, 52, 5.8];
+    const BASIN = [34, 52, 3.4];   // sized to two Leviathans nose to tail
     const tip = kind === 'shipyard'
       ? [[L, -w2], [L, -BASIN[2]], [BASIN[0], -BASIN[2]], [BASIN[0], BASIN[2]], [L, BASIN[2]], [L, w2]]
       : [[L - w2 * 1.2, -w2], [L, -w2 * 0.3], [L, w2 * 0.3], [L - w2 * 1.2, w2]];
@@ -1704,7 +1704,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     } else if (kind === 'shipyard') {
       // Enclosed shipyard: walls round the basin, a translucent roof on ribs, a lift gate to the sea channel, and a
       // gantry on rails. A Leviathan sits inside for refit (added with the fleet) while the gantry works on it.
-      const [u0, u1, hv] = BASIN, um = (u0 + u1) / 2, len = u1 - u0, H = 8;
+      const [u0, u1, hv] = BASIN, um = (u0 + u1) / 2, len = u1 - u0, H = 5;
       const [hx, hz] = toWorld(um, 0);
       HARBOR = { x: hx, z: hz, yaw: Math.atan2(ux, uz), ux, uz, prev: 0 };
       // The far wall is solid; the side facing the viewer is a glass curtain over a low base, so the ship shows
@@ -1717,8 +1717,12 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       [-1, 1].forEach((sv) => box(len + 1.2, 0.3, 0.9, M.steel, um, ARM_TOP + H, sv * (hv + 0.3), grp));
       box(0.6, H, hv * 2 + 1.2, M.ceramic, u0 - 0.3, ARM_TOP, 0, grp);
       // Sea gate: a lift door between two gate towers, rising into the header to let the ship out
-      [-1, 1].forEach((sv) => box(1.2, H + 7, 1.2, M.ceramic, u1 + 0.3, ARM_TOP, sv * (hv + 0.9), grp));
-      box(1.4, 1, hv * 2 + 3, M.trim, u1 + 0.3, ARM_TOP + H + 6, 0, grp);
+      [-1, 1].forEach((sv) => box(1, H + 4, 1, M.ceramic, u1 + 0.3, ARM_TOP, sv * (hv + 0.8), grp));
+      box(1.2, 0.8, hv * 2 + 2.6, M.trim, u1 + 0.3, ARM_TOP + H + 3.2, 0, grp);
+      // Fabrication shop along the far side of the hall, where hull sections are built before they go in
+      box(len, 3, 3.6, M.ceramic, um, ARM_TOP, -(hv + 2.4), grp);
+      box(len + 0.06, 0.4, 3.66, M.glass, um, ARM_TOP + 1.7, -(hv + 2.4), grp);
+      box(len - 1, 0.08, 3, M.park, um, ARM_TOP + 3, -(hv + 2.4), grp);
       const gate = box(0.5, H + 1.6, hv * 2 + 0.2, M.trim, u1 + 0.3, -0.4, 0, grp);
       const gateBand = new T.Mesh(new T.BoxGeometry(0.54, 0.3, hv * 2 + 0.24), M.accent);
       gateBand.position.y = -(H + 1.6) / 2 + 2.4; gate.add(gateBand);
@@ -1731,11 +1735,11 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       const gTrolley = box(1.4, 0.8, 1.4, M.accent, um - 4, ARM_TOP + H - 2.2, 1.5, grp);
       const gCable = box(0.06, 1, 0.06, M.steel, um - 4, 0, 1.5, grp);
       const gLoad = box(3, 0.22, 2, M.trim, um - 4, 0, 1.5, grp);
-      const sparks = [[-6, 1.4, 1.1], [-3.5, 1, -1.3], [4.5, 1.6, 0.9], [7, 1.1, -1]].map(([du, y, v]) => box(0.22, 0.22, 0.22, M.glow, um + du, y, v, grp));
+      const sparks = [[-6, 1.1, 1], [-3, 0.9, -1.1], [3.5, 1.2, 0.9], [6.5, 0.9, -1]].map(([du, y, v]) => box(0.22, 0.22, 0.22, M.glow, um + du, y, v, grp));
       HARBOR.yard = { gBridge, gTrolley, gCable, gLoad, sparks, um, top: ARM_TOP + H - 2.2 };
       const STACK = [M.trim, M.glass, M.steel];
       [-1, 1].forEach((sv) => {
-        for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) box(2.6, 1 + Math.floor(rand() * 3) * 1.05, 1.2, STACK[(i + j) % 3], 0.58 * L + i * 2.9, ARM_TOP, sv * (w2 + 1.4 + j * 1.6), grp);
+        for (let i = 0; i < 6; i++) for (let j = 0; j < 3; j++) box(1.6, 0.6 + Math.floor(rand() * 3) * 0.6, 0.8, STACK[(i + j) % 3], 0.58 * L + i * 1.9, ARM_TOP, sv * (w2 + 1.2 + j * 1.1), grp);
       });
       tower(24, 0, 3, 9 + rand() * 4, ARM_TOP, grp);
     } else if (kind === 'flight') {
@@ -2269,11 +2273,22 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const a = k / 12 * Math.PI * 2, r = 5.4 + Math.sin(a * 2) * 1.1;
     return new T.Vector3(G.x + Math.cos(a) * r, 0.1, G.z + Math.sin(a) * r * 0.8);
   }), true);
+  // A hull with a pointed bow toward +z: width, length, height; sits from y 0 to y height
+  function hullGeo(W, Lh, Hh) {
+    const b = Lh / 2, t = b - Math.min(Lh * 0.2, W * 1.4);
+    const g = new T.ExtrudeGeometry(new T.Shape([[-W / 2, -b], [W / 2, -b], [W / 2, t], [0, b], [-W / 2, t]].map(([x, y]) => new T.Vector2(x, y))), { depth: Hh, bevelEnabled: false });
+    g.rotateX(Math.PI / 2); g.translate(0, Hh, 0);
+    return g;
+  }
+  const hull = (W, Lh, Hh, mat, x, y, z, parent) => { const m = shade(new T.Mesh(hullGeo(W, Lh, Hh), mat)); m.position.set(x, y, z); parent.add(m); return m; };
+  // Sweep drone: a small catamaran with pointed twin hulls, a solar deck, a sensor mast and an acoustic vortex ring
   function makeCat() {
     const g = new T.Group();
-    box(0.6, 0.6, 3.8, M.accent, -0.9, 0, 0, g); box(0.6, 0.6, 3.8, M.accent, 0.9, 0, 0, g);
-    box(2.4, 0.3, 2.2, M.ceramic, 0, 0.6, 0, g);
-    box(2.2, 0.08, 1.8, M.glass, 0, 0.92, 0, g).rotation.x = 0.15;
+    [-0.9, 0.9].forEach((x) => { hull(0.6, 3.8, 0.6, M.accent, x, 0, 0, g); box(0.62, 0.12, 3, M.ceramic, x, 0.6, -0.3, g); });
+    box(2.4, 0.3, 2.2, M.ceramic, 0, 0.6, -0.2, g);
+    box(2.2, 0.08, 1.8, M.glass, 0, 0.92, -0.2, g).rotation.x = 0.15;
+    cyl(0.04, 0.04, 1, M.steel, 0, 0.9, 0.8, 5, g);
+    box(0.16, 0.12, 0.16, M.glow, 0, 1.9, 0.8, g);
     const v = new T.Mesh(new T.RingGeometry(1.6, 2, 32), M.vortex);
     v.rotation.x = -Math.PI / 2; v.position.y = -0.3; g.add(v);
     g.scale.setScalar(0.45);
@@ -2287,9 +2302,11 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     return new T.Vector3(G.x + Math.cos(a) * 7.6, 0.1, G.z + Math.sin(a) * 6.2);
   }), true);
   const lev = new T.Group();
-  box(2.6, 1.3, 15, M.accent, 0, -0.5, 0, lev);
-  box(1, 0.9, 10, M.accent, -4.2, -0.4, -0.5, lev);
-  box(1, 0.9, 10, M.accent, 4.2, -0.4, -0.5, lev);
+  hull(2.6, 15, 1.3, M.accent, 0, -0.5, 0, lev);
+  hull(1, 10, 0.9, M.accent, -4.2, -0.4, -0.5, lev);
+  hull(1, 10, 0.9, M.accent, 4.2, -0.4, -0.5, lev);
+  // Drone pads on the aft deck, where the hive launches and recharges its sweep drones
+  [[1.6, -1.6], [1.6, 0.3], [-1.6, 0.3]].forEach(([x, z]) => { cyl(0.6, 0.6, 0.05, M.trim, x, 1.15, z, 20, lev); cyl(0.62, 0.62, 0.03, M.glow, x, 1.2, z, 20, lev); });
   [-3.5, 0.5, 4].forEach((z) => box(9.4, 0.3, 0.8, M.ceramic, 0, 0.45, z, lev));
   box(5, 0.35, 11.5, M.ceramic, 0, 0.8, 0.3, lev);
   box(3.2, 2.2, 4, M.ceramic, 0, 1.15, 3, lev);
@@ -2333,10 +2350,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   if (HARBOR) {
     const refit = lev.clone();
     refit.children.filter((c) => c.isLineSegments).forEach((c) => refit.remove(c));
-    refit.position.set(HARBOR.x - HARBOR.ux * 5.2, 0.05, HARBOR.z - HARBOR.uz * 5.2); refit.rotation.y = HARBOR.yaw;
+    refit.position.set(HARBOR.x - HARBOR.ux * 4.1, 0.05, HARBOR.z - HARBOR.uz * 4.1); refit.rotation.y = HARBOR.yaw;
     world.add(refit);
     const refit2 = refit.clone();
-    refit2.position.set(HARBOR.x + HARBOR.ux * 5.2, 0.05, HARBOR.z + HARBOR.uz * 5.2);
+    refit2.position.set(HARBOR.x + HARBOR.ux * 4.1, 0.05, HARBOR.z + HARBOR.uz * 4.1);
     world.add(refit2);
     HARBOR.refit = refit;
   }
@@ -2374,8 +2391,12 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     return new T.Vector3(G.x + Math.cos(a) * 15, 0.1, G.z + Math.sin(a) * 11);
   }), true);
   const drones = [0, 1, 2, 3].map((k) => {
-    const m = shade(new T.Mesh(new T.SphereGeometry(0.4, 10, 6), M.accent));
-    m.scale.set(0.65, 0.45, 1.05); world.add(m); return { m, k };
+    const m = new T.Group();
+    const body = shade(new T.Mesh(new T.SphereGeometry(0.4, 12, 8), M.accent)); body.scale.set(0.8, 0.7, 2); m.add(body);
+    box(0.06, 0.5, 0.4, M.ceramic, 0, -0.25, -0.7, m);
+    box(0.9, 0.06, 0.35, M.ceramic, 0, -0.03, -0.7, m);
+    box(0.2, 0.14, 0.08, M.glow, 0, 0.05, 0.8, m);
+    m.scale.setScalar(0.55); world.add(m); return { m, k };
   });
   const netCenter = new T.Vector3();
   const PLASTIC = 70;
@@ -2621,10 +2642,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     // Shipyard: the gantry moves between spots on the ship, lowers a plate, holds while it's welded, lifts again
     if (HARBOR && HARBOR.yard) {
       const y = HARBOR.yard, c = (now / 1000) % 16, spot = Math.floor(now / 16000) % 3;
-      const SPOTS = [[-6, 0.8], [4.5, -0.9], [-3, -0.6]], [su, sv] = SPOTS[spot], [pu, pv] = SPOTS[(spot + 2) % 3];
+      const SPOTS = [[-5.5, 0.6], [4, -0.6], [-2.5, -0.4]], [su, sv] = SPOTS[spot], [pu, pv] = SPOTS[(spot + 2) % 3];
       const mv = smooth(Math.min(1, c / 4));                          // 0-4 s travel from the last spot
       const drop = c < 4 ? 0 : c < 6.5 ? smooth((c - 4) / 2.5) : c < 11 ? 1 : c < 13.5 ? 1 - smooth((c - 11) / 2.5) : 0;
-      const u = y.um + pu + (su - pu) * mv, v = pv + (sv - pv) * mv, hookY = y.top - 0.3 - drop * 4.4;
+      const u = y.um + pu + (su - pu) * mv, v = pv + (sv - pv) * mv, hookY = y.top - 0.3 - drop * 1.5;
       y.gBridge.position.x = u; y.gTrolley.position.x = u; y.gTrolley.position.z = v;
       y.gCable.position.set(u, (y.top + hookY) / 2, v); y.gCable.scale.y = Math.max(0.05, y.top - hookY);
       y.gLoad.position.set(u, hookY - 0.15, v);

@@ -70,6 +70,10 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   drones and plastic shrink with it. No docks stick out of the city: Leviathans berth inside the bay between the
   foundry and shipyard piers (`BERTHS`, one in scaffolding), jib cranes on the decks (`CRANES`, `dockCranes`) swing
   containers onto them, and small supply ships and tugs (`makeShip`, half scale) moor round the bay.
+  The shipyard hall is sized to its two ships (`BASIN` 34-52, half-width 3.4, walls 5 high) with a fabrication shop
+  beside it and small containers on the wings. Ship models use `hullGeo` (pointed bows toward +z): Leviathans have
+  pointed main hull and outriggers plus glowing drone pads, sweep drones (`makeCat`) pointed twin hulls, and the
+  underwater harvest drones are finned torpedoes with a sensor eye.
   farm sits in the bay between the flight and rectenna piers. Whites are toned down (ceramic #e3e8ee, hemi 0.88)
   after the user found the city too bright. Towers use `tower()`: one striped glazing mesh (`M.bands`, alpha-map
   stripes) instead of stacked bands, to keep the mesh count down. The mainland sits at the map edge (coast ~x -300,
