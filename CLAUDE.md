@@ -74,7 +74,8 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   under ~26 so the anchor is the tallest thing in the city; Aura Core sits on the hub at `AURA`. Midway is at
   `MIDWAY_Y` 84 and the Apex at `APEX_Y` 172 so the tether has room (the user found it cramped). City life (the
   user wants it to feel lived in, and green): maglev trains on the hub ring rail, trams on three pier spines,
-  ferries shuttling out through three bays, air taxis circling at y 34+, tree rows along piers, green roofs on
+  ferries shuttling out through three bays, quadcopter drones (`cityDrones`) hopping between waypoints at y 30-39
+  with spinning rotors, beacons and some parcels (the user wants drones for the high-tech feel, not flying cars), tree rows along piers, green roofs on
   low-rise and tower tops.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.

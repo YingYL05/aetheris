@@ -1820,7 +1820,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   cable(CX + 1.8, CZ, WF.x, CZ);
   cable(CX - 1.8, CZ, P.x + 35, CZ);
 
-  // ----- City life: maglev trains round the hub, trams on the piers, ferries in the bays, air taxis overhead -----
+  // ----- City life: maglev trains round the hub, trams on the piers, ferries in the bays, drones overhead -----
   function makeCars(n, parent = world) {
     return Array.from({ length: n }, () => {
       const c = new T.Group();
@@ -1842,12 +1842,26 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     world.add(g);
     return { g, a: deg * Math.PI / 180, ph: k * 2.1 };
   });
-  const taxis = Array.from({ length: 8 }, (_, k) => {
-    const m = new T.Group();
-    box(0.9, 0.28, 0.6, M.accent, 0, 0, 0, m);
-    box(0.5, 0.18, 0.5, M.glass, 0.05, 0.28, 0, m);
+  // Quadcopter drones: they hop between waypoints over the city, hover a moment at each, and some carry a parcel
+  const rotorGeo = new T.CylinderGeometry(0.42, 0.42, 0.04, 12);
+  const droneWaypoint = () => {
+    const a = rand() * Math.PI * 2, r = 12 + rand() * 44;
+    return new T.Vector3(P.x + Math.cos(a) * r, 30 + rand() * 9, P.z + Math.sin(a) * r);
+  };
+  const cityDrones = Array.from({ length: 12 }, (_, k) => {
+    const m = new T.Group(), rotors = [];
+    box(0.55, 0.2, 0.55, M.ceramic, 0, -0.1, 0, m);
+    [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([sx, sz]) => {
+      const arm = box(0.95, 0.07, 0.1, M.trim, sx * 0.34, 0, sz * 0.34, m); arm.rotation.y = sx * sz > 0 ? -Math.PI / 4 : Math.PI / 4;
+      const rotor = new T.Mesh(rotorGeo, M.accent); rotor.position.set(sx * 0.68, 0.08, sz * 0.68); m.add(rotor); rotors.push(rotor);
+    });
+    const light = box(0.14, 0.08, 0.14, M.glow, 0, 0.1, 0, m);
+    if (k % 3 === 0) box(0.4, 0.34, 0.4, M.trim, 0, -0.62, 0, m);   // parcel
+    m.rotation.order = 'YXZ';   // yaw toward the next stop, then pitch
     world.add(m);
-    return { m, r: 28 + (k % 4) * 6, y: 34 + (k % 3) * 2.5, w: (k % 2 ? -1 : 1) * (0.1 + (k % 3) * 0.03), a: k * 0.8 };
+    const from = droneWaypoint();
+    m.position.copy(from);
+    return { m, rotors, light, from, to: droneWaypoint(), t: rand(), hold: 0, dur: 4 + rand() * 4 };
   });
 
   // ----- Spire tether + climbers + beam -----
@@ -2381,10 +2395,17 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       f.g.position.set(P.x + Math.cos(f.a) * r, 0.15, P.z + Math.sin(f.a) * r);
       f.g.rotation.y = Math.atan2(Math.cos(f.a), Math.sin(f.a)) + (out ? 0 : Math.PI);
     });
-    taxis.forEach((tx) => {
-      tx.a += dt * tx.w;
-      tx.m.position.set(P.x + Math.cos(tx.a) * tx.r, tx.y + Math.sin(now / 1300 + tx.r) * 0.6, P.z + Math.sin(tx.a) * tx.r);
-      tx.m.rotation.y = -tx.a + (tx.w > 0 ? -Math.PI / 2 : Math.PI / 2);
+    cityDrones.forEach((d, i) => {
+      d.rotors.forEach((r) => { r.rotation.y += dt * 40; });
+      d.light.visible = (now / 400 + i) % 2 < 1;   // blinking beacon
+      if (d.hold > 0) { d.hold -= dt; d.m.position.y = d.from.y + Math.sin(now / 300 + i) * 0.15; return; }
+      d.t += dt / d.dur;
+      if (d.t >= 1) { d.from.copy(d.to); d.to = droneWaypoint(); d.t = 0; d.hold = 1 + Math.random() * 2; d.dur = 4 + Math.random() * 4; return; }
+      const e = d.t * d.t * (3 - 2 * d.t);
+      d.m.position.lerpVectors(d.from, d.to, e);
+      d.m.position.y += Math.sin(Math.PI * d.t) * 2;   // a little lift between stops
+      d.m.rotation.y = Math.atan2(d.to.x - d.from.x, d.to.z - d.from.z);
+      d.m.rotation.x = Math.sin(Math.PI * d.t) * 0.25;   // nose down while moving
     });
     // Climbers ride the tether; the lowest ascending one gets the power beam
     let beamTo = null;
