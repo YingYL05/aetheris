@@ -1027,6 +1027,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const G = { x: 92, z: -62 };    // Leviathan gyre
   const R0 = { x: 72, z: 92 };    // reef and Abyss mission
   const L1P = { x: -64, y: 96, z: -64 };
+  const MIDWAY_Y = 58;   // Stratosphere Port: high enough above the city for the whole mag-drop to play out
   const STOPS = [
     { id: 'overview', short: 'Overview', focus: [P.x + 4, 6, P.z + 2], ext: [104, 68],
       code: 'AETH//01', title: 'The whole operation, in miniature',
@@ -1043,15 +1044,15 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'The intelligence that runs the system. It forecasts planetary weather, tilts the L1 shade, dispatches seeders and guards the platform without lethal force.',
       specs: [['Forecasting', '14,000 satellite vectors, 100 ms loop'], ['Defense', 'RF jamming, ECM, acoustic water barriers'], ['Persona', 'Modeled on the founder’s late partner'], ['API', 'Open access, zero cost']],
       live: () => ['Forecast cycle', fmt(sim.forecast)] },
-    { id: 'spire', short: 'Spire', focus: [P.x, 22, P.z], ext: [40, 56], pin: [P.x + 1.5, 52, P.z],
+    { id: 'spire', short: 'Spire', focus: [P.x, MIDWAY_Y / 2 + 6, P.z], ext: [44, 78], pin: [P.x + 1.5, MIDWAY_Y * 0.7, P.z],
       code: 'AETH//01-C', title: 'The Spire tether',
       body: 'A carbon nanotube ribbon from the platform to geostationary orbit, held taut by the Apex Station’s asteroid counterweight. Maglev climbers ride it on laser-beamed power.',
       specs: [['Length', '36,000 km to GEO'], ['Tracks', 'Dual ascender tracks, fiber-optic telemetry core'], ['Throughput', 'Thousands of metric tons per week'], ['Cost', '$0.18/kg to orbit']],
       live: () => ['Climbers ascending', `${sim.climbUp} of 4`] },
-    { id: 'strato', short: 'Stratosphere Port', focus: [P.x - 4, 32, P.z + 2], ext: [44, 32], pin: [P.x - 5.5, 38, P.z],
+    { id: 'strato', short: 'Stratosphere Port', focus: [P.x - 9, MIDWAY_Y - 6, P.z + 3], ext: [62, 42], pin: [P.x + 4, MIDWAY_Y + 3, P.z - 3],
       code: 'AETH//01-D', title: 'Stratosphere Port (Midway)',
       body: 'A station on the tether at 30 km. Angels hang from electromagnetic rail mounts underneath, then drop along the tether into a magnetic slingshot that never dips below 20 km.',
-      specs: [['Altitude', '30 km (100,000 ft), below 12 hPa'], ['Mounts', 'EM rail mounts, hydraulic backup clamps'], ['Launch', 'Mag-drop: free-fall, tether inductors, J-curve'], ['Fleet', '48 Angel-class seeders']],
+      specs: [['Altitude', '30 km (100,000 ft), below 12 hPa'], ['Mounts', 'EM rail mounts, hydraulic backup clamps'], ['Launch', 'Hang level, pitch nose-down, free-fall, inductor J-curve, push-out'], ['Fleet', '48 Angel-class seeders']],
       live: () => ['Seeders airborne', `${sim.airborne} of 8 shown`] },
     { id: 'apex', short: 'Apex Station', focus: [P.x + 14, 120, P.z - 2], ext: [88, 56], pin: [P.x - 12, 124, P.z + 4],
       code: 'AETH//01-E', title: 'Apex Station · GEO counterweight',
@@ -1122,9 +1123,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     return b;
   });
   const TAGS = [
-    { text: '30 km · Midway', at: [P.x + 13, 19, P.z] },
+    { text: '30 km · Midway', at: [P.x + 13, (2.4 + MIDWAY_Y) / 2, P.z] },
     { text: 'Wave farm · power', at: [P.x + 31, 1.5, P.z + 21] },
-    { text: '↑ Apex Station · GEO 36,000 km', at: [P.x + 1.5, 64, P.z] },
+    { text: '↑ Apex Station · GEO 36,000 km', at: [P.x + 1.5, MIDWAY_Y + 14, P.z] },
     { text: 'L1 · ~1.5M km · not to scale', at: [L1P.x, L1P.y - 6, L1P.z] }
   ].map((t) => { const el = document.createElement('span'); el.className = 'tag mono'; el.textContent = t.text; pinsEl.appendChild(el); return { ...t, el }; });
 
@@ -1479,6 +1480,11 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   cyl(1.6, 2.2, 3.2, M.trim, P.x, DECK, P.z, 16);
   box(6, 2.6, 4, M.ceramic, P.x + 3, DECK, P.z + 5);
   box(6.1, 0.4, 4.1, M.trim, P.x + 3, DECK + 2.6, P.z + 5);
+  for (let k = 0; k < 3; k++) {
+    const tooth = shade(new T.Mesh(new T.CylinderGeometry(0.62, 0.62, 3.8, 3), M.trim));
+    tooth.rotation.x = Math.PI / 2; tooth.position.set(P.x + 1.1 + k * 1.9, DECK + 3.25, P.z + 5); world.add(tooth);
+  }
+  for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; box(0.6, 1.3, 0.6, M.steel, P.x + Math.cos(a) * 2.5, DECK, P.z + Math.sin(a) * 2.5).rotation.y = -a; }
   const aura = new T.Mesh(new T.SphereGeometry(2.2, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass);
   aura.position.set(P.x - 4, DECK, P.z + 3); shade(aura); world.add(aura);
   const auraRing = new T.Mesh(new T.TorusGeometry(2.3, 0.12, 8, 32), M.accent);
@@ -1630,39 +1636,31 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // ----- Spire tether + climbers + beam -----
   const TOPY = 120;   // the tether ends at the Apex Station
   cyl(0.22, 0.22, TOPY - DECK, M.tether, P.x, DECK, P.z, 8).castShadow = true;
-  function makeClimber(side) {
+  function makeClimber(ox, oz) {
     const g = new T.Group();
     box(1.4, 2.4, 1.4, M.accent, 0, -1.2, 0, g);
     box(1.44, 0.4, 1.44, M.glass, 0, 0.3, 0, g);
     box(1.5, 0.2, 1.5, M.ceramic, 0, 1.2, 0, g);
     box(1.5, 0.2, 1.5, M.ceramic, 0, -1.4, 0, g);
-    [-0.8, 0.6].forEach((y) => box(0.7, 0.3, 0.5, M.steel, -Math.sign(side) * 0.95, y, 0, g));
+    [-0.8, 0.6].forEach((y) => box(0.6, 0.3, 0.6, M.steel, -Math.sign(ox) * 0.95, y, -Math.sign(oz) * 0.95, g));
     const dish = cyl(0.5, 0.2, 0.25, M.trim, 0, 1.4, 0, 12, g);
-    dish.rotation.z = Math.sign(side) * 0.5;
+    dish.rotation.z = -0.5;
     world.add(g); return g;
   }
   const climbers = [0, 1, 2, 3].map((k) => {
-    const side = k % 2 === 0 ? 1.05 : -1.05;
-    return { m: makeClimber(side), y: 6 + k * 34, up: k % 2 === 0, side };
+    const off = k % 2 === 0 ? [1.05, 0] : [0, -1.05];
+    return { m: makeClimber(...off), y: 6 + k * 34, up: k % 2 === 0, off };
   });
   const beam = new T.Mesh(new T.CylinderGeometry(0.12, 0.12, 1, 6, 1, true), M.beam);
   world.add(beam);
 
   // ----- Stratosphere Port at "30 km" -----
-  const SY = 36;
+  const SY = MIDWAY_Y;
   cyl(4.6, 4.6, 0.7, M.ceramic, P.x, SY, P.z, 32);
   const ring = new T.Mesh(new T.TorusGeometry(5.6, 0.55, 10, 40), M.trim);
   ring.rotation.x = Math.PI / 2; ring.position.set(P.x, SY + 0.35, P.z); shade(ring); world.add(ring);
   box(3, 1.4, 2.2, M.ceramic, P.x + 2, SY + 0.7, P.z - 1.5);
   box(2.2, 1.1, 2.2, M.ceramic, P.x - 2.2, SY + 0.7, P.z + 1.2);
-  const rail = box(9, 0.3, 0.8, M.accent, P.x - 6, SY + 0.4, P.z + 3);
-  rail.rotation.y = -0.6;
-  // Linear inductors on the tether just below Midway: they bend the mag-drop into its J-curve
-  for (let k = 0; k < 3; k++) {
-    const coil = new T.Mesh(new T.TorusGeometry(5.9, 0.13, 6, 48), M.accent);
-    coil.rotation.x = Math.PI / 2; coil.position.set(P.x, SY - 2 - k * 1.25, P.z); world.add(coil);
-    for (let s = 0; s < 4; s++) { const st = box(0.12, 0.12, 5.9, M.trim, P.x, SY - 2.06 - k * 1.25, P.z); st.rotation.y = s * Math.PI / 4; st.position.add(new T.Vector3(Math.sin(s * Math.PI / 4) * 2.95, 0, Math.cos(s * Math.PI / 4) * 2.95)); }
-  }
   for (let k = 0; k < 4; k++) { const sp = box(5.6, 0.2, 0.2, M.trim, P.x, SY + 0.3, P.z); sp.rotation.y = k * Math.PI / 4; }
   cyl(3.9, 2.6, 0.8, M.trim, P.x, SY - 0.8, P.z, 24);
   cyl(1.7, 1.9, 1.6, M.ceramic, P.x, SY + 0.7, P.z, 20);
@@ -1671,6 +1669,16 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const r = box(3.6, 0.08, 1.4, M.glass, P.x + Math.cos(a) * 3.4, SY + 2.1, P.z + Math.sin(a) * 3.4);
     r.rotation.y = -a; r.rotation.x = 0.3;
   });
+  const ringWin = new T.Mesh(new T.TorusGeometry(5.6, 0.57, 8, 48), M.glass);
+  ringWin.rotation.x = Math.PI / 2; ringWin.scale.set(1, 1, 0.3); ringWin.position.set(P.x, SY + 0.35, P.z); world.add(ringWin);
+  for (let k = 0; k < 4; k++) {
+    const a = Math.PI / 4 + k * Math.PI / 2, x = P.x + Math.cos(a) * 6.5, z = P.z + Math.sin(a) * 6.5;
+    box(1.3, 1, 1.3, M.ceramic, x, SY - 0.15, z).rotation.y = -a;
+    box(1.34, 0.3, 1.34, M.glass, x, SY + 0.35, z).rotation.y = -a;
+  }
+  for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; box(0.16, 0.12, 0.16, M.glow, P.x + Math.cos(a) * 6.2, SY + 0.85, P.z + Math.sin(a) * 6.2); }
+  cyl(0.07, 0.07, 3, M.steel, P.x + 0.9, SY + 1.85, P.z + 0.9, 6);
+  cyl(0.45, 0.1, 0.2, M.trim, P.x + 0.9, SY + 4.8, P.z + 0.9, 12);
   // Dimension line: deck to Midway
   const dimPts = [];
   const DX = P.x + 13;
@@ -1721,6 +1729,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const lab = box(2.6, 1.8, 2, M.ceramic, x, -0.9, z, apex); lab.rotation.y = -a;
     const band = box(2.65, 0.45, 2.05, M.glass, x, -0.1, z, apex); band.rotation.y = -a;
   }
+  for (let k = 0; k < 4; k++) {
+    const a = Math.PI / 6 + k * Math.PI / 2;
+    const w = box(4.4, 0.06, 1.8, M.glass, Math.cos(a) * 13.6, 0.5, Math.sin(a) * 13.6, apex); w.rotation.y = -a;
+  }
   // Interstellar drydock: scaffolding for a generation ship, part-plated, off the outer ring
   const drydock = new T.Group();
   drydock.position.set(28, 0, -4);
@@ -1763,6 +1775,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const m = new T.Mesh(new T.BoxGeometry(Math.hypot(x1 - x0, z1 - z0), 0.05, 0.1), mat);
     m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); m.rotation.y = -Math.atan2(z1 - z0, x1 - x0); parent.add(m);
   }
+  const podGeo = new T.CylinderGeometry(0.13, 0.13, 1, 8); podGeo.rotateX(Math.PI / 2);
   function makeGlider(scale = 1.3) {
     const g = new T.Group();
     g.add(shade(new T.Mesh(wingGeo, M.accent)));
@@ -1774,19 +1787,69 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       edge(0.25 * sx, 1.35, 2.55 * sx, -0.78, M.glow, 0.06, g);
       const fin = box(0.07, 0.75, 0.75, M.ceramic, 0.42 * sx, 0.1, -0.95, g);
       fin.rotation.z = -0.35 * sx;
+      const pod = shade(new T.Mesh(podGeo, M.ceramic)); pod.position.set(1.15 * sx, -0.12, -0.25); g.add(pod);
+      box(0.05, 0.4, 0.45, M.ceramic, 2.52 * sx, 0.04, -0.98, g).rotation.z = -0.25 * sx;
+      box(0.12, 0.08, 0.12, M.glow, 2.58 * sx, 0.05, -0.78, g);
     });
     g.scale.setScalar(scale);
     world.add(g); return g;
   }
-  // Mag-drop routes: hang under Midway, free-fall along the tether, J-curve out toward the island, cruise high,
-  // descend to seed, glide home and dock under the port again
+  // Mag-drop (launch brief §1). Each lane is a vertical plane out from the tether. The Angel hangs level on a rail
+  // mount, pitches nose-down on release, free-falls belly-to-tether, is bent through the J-curve by the tether's
+  // linear inductors, gets a last push outward at the bottom, then cruises off. Profile is (distance from the
+  // tether, height), not to scale.
   const toIsle = new T.Vector2(IC.x - P.x, IC.z - P.z).normalize();
-  const along = (d, y, side = 0) => [P.x + toIsle.x * d - toIsle.y * side, y, P.z + toIsle.y * d + toIsle.x * side];
-  const loops = [0, 1].map((o) => new T.CatmullRomCurve3([
-    along(5.3, SY - 1.4, o * 1.2 - 0.6), along(5.3, SY - 3.8, o * 1.2 - 0.6), along(8.5, SY - 5.8, o - 0.5), along(17, SY - 6.1, o * 2 - 1), along(44, SY - 5.8, o * 4 - 2),
-    [IC.x + 18, 14, IC.z - 14 + o * 4], [IC.x + 10, 7, IC.z - 10 + o * 4], [IC.x - 10, 6.5, IC.z - 4 + o * 3], [IC.x - 6, 7, IC.z + 12 - o * 3],
-    [IC.x + 14, 14, IC.z + 18], [-40, 26, 34 - o * 3], [-14, SY - 3, 16], along(10, SY - 2.6, 3 - o * 6)
-  ].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal'));
+  const HANG_R = 6, LEVEL = SY - 12.5;
+  const DROP = [[HANG_R, SY - 1.6], [HANG_R, SY - 3.4], [HANG_R, SY - 6.2], [HANG_R + 0.4, SY - 8.8], [HANG_R + 1.7, SY - 10.9],
+    [HANG_R + 3.9, SY - 12.1], [HANG_R + 7, LEVEL], [HANG_R + 13, LEVEL], [HANG_R + 24, LEVEL + 0.4]];
+  const LANES = [-0.62, 0.62, 0].map((a) => new T.Vector3(toIsle.x * Math.cos(a) - toIsle.y * Math.sin(a), 0, toIsle.x * Math.sin(a) + toIsle.y * Math.cos(a)));
+  const atLane = (li, d, y) => [P.x + LANES[li].x * d, y, P.z + LANES[li].z * d];
+  const route = (pts) => new T.CatmullRomCurve3(pts.map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
+  const loops = [0, 1].map((o) => route([
+    ...DROP.map(([d, y]) => atLane(o, d, y)),
+    [IC.x + 18, 16, IC.z - 14 + o * 4], [IC.x + 10, 7, IC.z - 10 + o * 4], [IC.x - 10, 6.5, IC.z - 4 + o * 3], [IC.x - 6, 7, IC.z + 12 - o * 3],
+    [IC.x + 14, 16, IC.z + 18], [-40, SY * 0.6, 34 - o * 3], atLane(o, HANG_R + 16, SY - 4), atLane(o, HANG_R + 3, SY - 1.4)
+  ]));
+  // Per lane: the inductor on the tether, the rail mount under Midway, the field it throws (a translucent
+  // half-pipe that brightens while an Angel is in the bend) and a ring that flashes at the push-out
+  const laneFx = LANES.map((dir, li) => {
+    const yaw = -Math.atan2(dir.z, dir.x);
+    box(0.3, SY - 2.6 - LEVEL, 1.1, M.trim, P.x + dir.x * 0.5, LEVEL, P.z + dir.z * 0.5).rotation.y = yaw;
+    for (let y = LEVEL + 0.5; y < SY - 3.2; y += 1.3) box(0.24, 0.7, 1.2, M.accent, P.x + dir.x * 0.72, y, P.z + dir.z * 0.72).rotation.y = yaw;
+    box(4.6, 0.3, 0.5, M.trim, P.x + dir.x * HANG_R, SY - 0.45, P.z + dir.z * HANG_R).rotation.y = yaw;
+    [-1.3, 1.3].forEach((o) => box(0.28, 0.8, 0.28, M.steel, P.x + dir.x * (HANG_R + o), SY - 1.25, P.z + dir.z * (HANG_R + o)));
+    const jc = new T.CatmullRomCurve3(DROP.slice(1, 8).map(([d, y]) => new T.Vector3(...atLane(li, d, y))), false, 'centripetal');
+    const lat = new T.Vector3(-dir.z, 0, dir.x), f = new T.Vector3(), u = new T.Vector3(), pos = [], idx = [], rungs = [], N = 40;
+    for (let k = 0; k <= N; k++) {
+      const c = jc.getPointAt(k / N); jc.getTangentAt(k / N, f);
+      c.addScaledVector(u.crossVectors(lat, f).normalize(), -1);   // the field sits between the belly and the tether
+      const a = c.clone().addScaledVector(lat, 2.2), b = c.clone().addScaledVector(lat, -2.2);
+      pos.push(a.x, a.y, a.z, b.x, b.y, b.z);
+      if (k) idx.push(2 * k - 2, 2 * k - 1, 2 * k, 2 * k - 1, 2 * k + 1, 2 * k);
+      if (k % 4 === 0) rungs.push(a, b);
+    }
+    const geo = new T.BufferGeometry();
+    geo.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); geo.setIndex(idx);
+    const mat = new T.MeshBasicMaterial({ transparent: true, opacity: 0.07, side: T.DoubleSide, depthWrite: false });
+    world.add(new T.Mesh(geo, mat));
+    const lmat = new T.LineBasicMaterial({ transparent: true, opacity: 0.2 });
+    world.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(rungs), lmat));
+    const ring = new T.Mesh(new T.RingGeometry(1.3, 1.7, 32), new T.MeshBasicMaterial({ transparent: true, opacity: 0, side: T.DoubleSide, depthWrite: false }));
+    ring.position.set(...atLane(li, HANG_R + 7, LEVEL)); ring.lookAt(ring.position.clone().add(dir)); ring.visible = false;
+    world.add(ring);
+    return { mat, lmat, ring, glow: 0, t0: -1e9 };
+  });
+  [LEVEL - 0.6, SY - 3].forEach((y) => cyl(0.85, 0.85, 0.5, M.ceramic, P.x, y, P.z, 16));
+  // Attitude through the drop: nose along f, belly toward the tether (or down once level)
+  const latV = new T.Vector3(), upV = new T.Vector3(), xV = new T.Vector3(), tanV = new T.Vector3(), basisM = new T.Matrix4();
+  const qHang = new T.Quaternion(), qLane = new T.Quaternion();
+  function laneQuat(dir, f, out) {
+    latV.set(-dir.z, 0, dir.x);
+    upV.crossVectors(latV, f).normalize();
+    xV.crossVectors(upV, f).normalize();
+    return out.setFromRotationMatrix(basisM.makeBasis(xV, upV, f));
+  }
+  const smooth = (x) => x * x * (3 - 2 * x);
   // Water-vapor contrail, laid only on the outbound scramjet leg
   const TRAIL = 30;
   const trailMat = new T.PointsMaterial({ size: 2.5, sizeAttenuation: false, color: 0x94a3b8, transparent: true, opacity: 0.7, depthWrite: false });
@@ -1800,19 +1863,19 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const gliders = [];
   loops.forEach((curve, li) => [0, 1, 2].forEach((k) => {
     const t = (k / 3 + li * 0.16) % 1;
-    gliders.push({ g: makeGlider(), trail: makeTrail(), curve, t, out: t < 0.45, id: `ANGEL-${String(li * 3 + k + 1).padStart(2, '0')}`, seeding: false, acc: 0 });
+    gliders.push({ g: makeGlider(), trail: makeTrail(), curve, t, out: t < 0.45, id: `ANGEL-${String(li * 3 + k + 1).padStart(2, '0')}`, seeding: false, acc: 0, lane: li });
   }));
   const parked = makeGlider(1.1);
   parked.position.set(P.x + 20.2, DECK + 0.25, RZ + 3.8);
   parked.rotation.y = -Math.PI / 2;
   // ANGEL-07 takes the second recovery option: a horizontal landing on the mega-city runway
-  const landCurve = new T.CatmullRomCurve3([
-    along(5.3, SY - 1.4, 1.6), along(5.3, SY - 3.8, 1.6), along(8.5, SY - 5.8, 1.4), along(17, SY - 6.1, 2), along(44, SY - 5.8, 4),
-    [IC.x + 18, 14, IC.z - 12], [IC.x + 12, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z],
+  const landCurve = route([
+    ...DROP.map(([d, y]) => atLane(2, d, y)),
+    [IC.x + 18, 16, IC.z - 12], [IC.x + 12, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z],
     [IC.x - 4, 7, IC.z + 14], [-50, 12, 66], [-6, 14, 64], [40, 8, 40], [60, 4, RZ], [P.x + 32, DECK + 0.5, RZ],
-    [P.x + 16, DECK + 0.5, RZ], [P.x + 4, 10, RZ - 2], [P.x - 6, 24, P.z + 8], along(10, SY - 2.6, 2)
-  ].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
-  gliders.push({ g: makeGlider(), trail: makeTrail(), curve: landCurve, t: 0.35, out: false, id: 'ANGEL-07', seeding: false, acc: 0, land: true, landed: false });
+    [P.x + 16, DECK + 0.5, RZ], [P.x + 4, 12, RZ - 2], [P.x - 22, SY * 0.55, P.z + 24], atLane(2, HANG_R + 16, SY - 4), atLane(2, HANG_R + 3, SY - 1.4)
+  ]);
+  gliders.push({ g: makeGlider(), trail: makeTrail(), curve: landCurve, t: 0.35, out: false, id: 'ANGEL-07', seeding: false, acc: 0, land: true, landed: false, lane: 2 });
   // ANGEL-08 uses the secondary method: the mag-lev catapult on the east runway, then a steep climb
   const catCurve = new T.CatmullRomCurve3([
     [P.x + 40, 2, P.z - 14], [P.x + 52, 2, P.z - 14], [P.x + 64, 2.4, P.z - 14], [P.x + 72, 9, P.z - 14.5], [P.x + 76, 22, P.z - 18],
@@ -1821,26 +1884,26 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     [P.x + 82, 5, P.z - 14], [P.x + 64, 2.2, P.z - 14], [P.x + 52, 2, P.z - 14], [P.x + 42, 2, P.z - 14.4]
   ].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
   gliders.push({ g: makeGlider(), trail: makeTrail(), curve: catCurve, t: 0.62, out: false, id: 'ANGEL-08', seeding: false, acc: 0, cat: true, launching: false });
-  // Where each route lights its scramjets: the J-curve level-out, or (for the catapult) stratospheric insertion
-  const ignitionT = (gl) => {
-    if (gl.cat) { for (let t = 0.002; t < 1; t += 0.002) if (gl.curve.getPointAt(t).y > SY - 6.5) return t; return 0.1; }
-    let steep = false;
-    for (let t = 0; t < 0.3; t += 0.001) {
-      const v = gl.curve.getTangentAt(t);
-      if (v.y < -0.6) steep = true; else if (steep && Math.abs(v.y) < 0.12) return t;
-    }
-    return 0.05;
-  };
-  gliders.forEach((gl) => { gl.tIgn = ignitionT(gl); });
+  // Route markers: where the pitch-over ends, the bend starts, the push-out fires and its burst fades. Scramjets
+  // light at the push-out (Mach 3 at the base of the J), or for the catapult at stratospheric insertion.
+  const firstT = (curve, test) => { for (let t = 0; t < 0.6; t += 0.0005) if (test(curve.getPointAt(t))) return t; return 0.05; };
+  const fromTether = (p) => Math.hypot(p.x - P.x, p.z - P.z);
+  gliders.forEach((gl) => {
+    if (gl.cat) { gl.tIgn = firstT(gl.curve, (p) => p.y > SY - 6.5); return; }
+    gl.dir = LANES[gl.lane]; gl.hold = 0;
+    gl.tFall = firstT(gl.curve, (p) => p.y < SY - 3.6);
+    gl.tBend = firstT(gl.curve, (p) => p.y < SY - 8);
+    gl.tPush = gl.tIgn = firstT(gl.curve, (p) => fromTether(p) > HANG_R + 7);
+    gl.tBlast = firstT(gl.curve, (p) => fromTether(p) > HANG_R + 24);
+  });
   // Angels waiting on Midway's rail mounts, nose out, each under its own mount
   [1.9, 3.1, 4.3].forEach((rot) => {
     const dx = toIsle.x * Math.cos(rot) - toIsle.y * Math.sin(rot), dz = toIsle.x * Math.sin(rot) + toIsle.y * Math.cos(rot);
     const hang = makeGlider(1.1);
-    hang.position.set(P.x + dx * 5.3, SY - 1.5, P.z + dz * 5.3);
-    hang.lookAt(P.x + dx * 9, SY - 1.5, P.z + dz * 9);
-    const railBeam = box(4.2, 0.3, 0.5, M.trim, P.x + dx * 5, SY - 0.45, P.z + dz * 5);
-    railBeam.rotation.y = -Math.atan2(dz, dx);
-    [4.4, 6.2].forEach((r) => box(0.28, 0.75, 0.28, M.steel, P.x + dx * r, SY - 1.2, P.z + dz * r));
+    hang.position.set(P.x + dx * HANG_R, SY - 1.6, P.z + dz * HANG_R);
+    hang.lookAt(P.x + dx * 12, SY - 1.6, P.z + dz * 12);
+    box(4.6, 0.3, 0.5, M.trim, P.x + dx * HANG_R, SY - 0.45, P.z + dz * HANG_R).rotation.y = -Math.atan2(dz, dx);
+    [-1.3, 1.3].forEach((o) => box(0.28, 0.8, 0.28, M.steel, P.x + dx * (HANG_R + o), SY - 1.25, P.z + dz * (HANG_R + o)));
   });
   const inIsland = (x, z) => RECTS.some(([x0, z0, x1, z1]) => x > x0 && x < x1 && z > z0 && z < z1);
 
@@ -2008,6 +2071,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     M.shade.color.setHex(pal.shade); M.shade.opacity = pal.shadeOp;
     M.beam.color.setHex(pal.accent); M.vortex.color.setHex(pal.accent);
     M.glow.color.setHex(pal.shade);
+    laneFx.forEach((f) => { f.mat.color.setHex(pal.accent); f.lmat.color.setHex(pal.accent); f.ring.material.color.setHex(pal.accent); });
     M.crown.color.setHex(pal.crown); M.inst.color.setHex(0xffffff); M.park.color.setHex(0xd6e8cf);
     M.accent.emissive.setHex(pal.accent); M.accent.emissiveIntensity = pal.glow * 0.5;
     M.glass.emissive.setHex(pal.accent); M.glass.emissiveIntensity = pal.glow * 0.35;
@@ -2073,7 +2137,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       c.y += (c.up ? 1 : -1) * dt * 9;
       if (c.up && c.y > TOPY - 4) { c.y = 5; log('SPIRE', `Climber C-${k + 1} handoff at GEO`); }
       if (!c.up && c.y < 5) c.y = TOPY - 4;
-      c.m.position.set(P.x + c.side, c.y, P.z);
+      c.m.position.set(P.x + c.off[0], c.y, P.z + c.off[1]);
       if (c.up) { sim.climbUp++; if (!beamTo || c.y < beamTo.y) beamTo = c; }
     });
     if (beamTo) {
@@ -2093,19 +2157,39 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       if (gl.cat && cur.y < 3.2 && cur.x > P.x + 37 && Math.abs(cur.z - (P.z - 14)) < 2.5) {
         // On the catapult the sled ramps the speed up; on landing the roll-out slows it down
         speed = gl.launching ? 5 + (cur.x - (P.x + 38)) * 1.6 : 4 + (cur.x - (P.x + 38)) * 0.8;
+      } else if (!gl.cat && gl.t < gl.tPush) {
+        speed = 3 + Math.max(0, SY - 1.6 - cur.y) * 2.8;   // gravity builds speed down the tether and through the bend
+      } else if (!gl.cat && gl.t < gl.tBlast) {
+        speed = 56 - 32 * (gl.t - gl.tPush) / (gl.tBlast - gl.tPush);   // the push-out, easing into cruise
       }
-      gl.t = (gl.t + dt * speed / gl.curve.getLength()) % 1;
+      if (gl.hold > 0) {
+        gl.hold -= dt;
+        if (gl.hold <= 0 && Math.random() < 0.5) log(gl.id, 'Released from the rail mount · nose-down drop along the tether');
+      } else gl.t = (gl.t + dt * speed / gl.curve.getLength()) % 1;
       if (gl.t < prevT) {
         gl.out = true;
         if (gl.cat) log(gl.id, 'Mag-lev catapult launch · ejected at Mach 1.5 · steep climb');
-        else if (Math.random() < 0.3) log(gl.id, 'Mag-drop release from Midway · J-curve');
+        else { gl.t = 0; gl.hold = 2.6; }   // docked: hang level on the rail mount through the checks, then drop
+      }
+      if (!gl.cat) {
+        if (gl.hold <= 0 && gl.t >= gl.tFall && gl.t < gl.tPush) laneFx[gl.lane].glow = 1;
+        if (prevT < gl.tBend && gl.t >= gl.tBend && Math.random() < 0.35) log(gl.id, 'Tether inductors engaged · J-curve at up to 9.5 G');
+        if (prevT < gl.tPush && gl.t >= gl.tPush) laneFx[gl.lane].t0 = now;
       }
       if (prevT < gl.tIgn && gl.t >= gl.tIgn && Math.random() < 0.4) {
-        log(gl.id, gl.cat ? 'Stratospheric insertion · cruise corridor reached' : 'J-curve level-out at 26 km · scramjet ignition at Mach 3');
+        log(gl.id, gl.cat ? 'Stratospheric insertion · cruise corridor reached' : 'Push-out at 26 km · scramjets lit at Mach 3');
       }
       const p = gl.curve.getPointAt(gl.t);
       gl.g.position.copy(p);
-      gl.g.lookAt(gl.curve.getPointAt((gl.t + 0.004) % 1, ahead));
+      gl.curve.getPointAt((gl.t + 0.004) % 1, ahead);
+      if (gl.cat || (gl.hold <= 0 && gl.t >= gl.tPush)) gl.g.lookAt(ahead);
+      else if (gl.hold > 0) gl.g.quaternion.slerp(laneQuat(gl.dir, gl.dir, qHang), Math.min(1, dt * 3));
+      else {
+        // Pitch over from level to nose-down as it falls away from the mount, then follow the J
+        laneQuat(gl.dir, gl.curve.getTangentAt(gl.t, tanV), qLane);
+        if (gl.t < gl.tFall) gl.g.quaternion.copy(laneQuat(gl.dir, gl.dir, qHang)).slerp(qLane, smooth(gl.t / gl.tFall));
+        else gl.g.quaternion.copy(qLane);
+      }
       gl.launching = ahead.x > p.x;
       if (p.distanceTo(new T.Vector3(P.x, SY, P.z)) > 9) sim.airborne++;
       const over = inIsland(p.x, p.z) && p.y < 10;
@@ -2127,6 +2211,13 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
         tr.geo.attributes.position.needsUpdate = true;
       }
       if (over) { gl.acc += dt; while (gl.acc > 0.05) { gl.acc -= 0.05; spawnSeed(p); } }
+    });
+    laneFx.forEach((f) => {
+      f.glow = Math.max(0, f.glow - dt * 1.5);
+      f.mat.opacity = 0.07 + f.glow * 0.2; f.lmat.opacity = 0.2 + f.glow * 0.5;
+      const k = (now - f.t0) / 700;
+      f.ring.visible = k < 1;
+      if (k < 1) { f.ring.scale.setScalar(1 + k * 3); f.ring.material.opacity = 0.7 * (1 - k); }
     });
     const cg = gliders.find((g) => g.cat).g.position;
     const onTrack = cg.y < 3.2 && cg.x > P.x + 37 && Math.abs(cg.z - (P.z - 14)) < 2.5 && gliders.find((g) => g.cat).launching;

@@ -9,9 +9,14 @@ stop, page section (#apex) and a live debris counter.
 Second brief (2026-10-26): "Angel-Class Launch Sequence & Trajectory". Primary launch is the mag-drop: gliders hang
 from EM rail mounts under Midway (30 km, below 12 hPa), free-fall along the tether, tether inductors bend them into a
 J-curve that levels out at 25-27 km (3-5 km drop, up to 9.5 G, never below 20 km), scramjets light at Mach 3, cruise
-Mach 6. Secondary is a mag-lev catapult on a 3.5 km titanium runway (ejection Mach 1.5+, steep climb). In the model:
-inductor hoops under Midway, gliders on rail mounts, mag-drop routes, contrails only after ignition (`tIgn`), and
-ANGEL-08 on the east-runway catapult with a sled. Page: section #launch (05), which also has a plan-view anatomy
+Mach 6. Secondary is a mag-lev catapult on a 3.5 km titanium runway (ejection Mach 1.5+, steep climb). In the model
+(2026-10-26, user's spec): Midway sits at `MIDWAY_Y` 58 so the drop has room. Three launch lanes (`LANES`, the
+`DROP` profile) each have a rail mount, a linear inductor on the tether, a translucent field "half-pipe" that lights
+during the bend and a ring that flashes at the push-out (`laneFx`). Sequence per Angel: hang level on the mount for
+the checks (`gl.hold`), pitch nose-down on release (`tFall`), free-fall belly-to-tether, inductor J-curve (`tBend`),
+push-out burst (`tPush`, also scramjet ignition `tIgn`, fading by `tBlast`), then cruise. `laneQuat` keeps the belly
+toward the tether through the drop; elsewhere gliders use lookAt. Contrails only after ignition, and ANGEL-08 on
+the east-runway catapult with a sled. Climbers ride the +x / -z sides of the tether, clear of the lanes. Page: section #launch (05), which also has a plan-view anatomy
 drawing of an Angel (`.anatomy`) and the "vertical maglev" drop / bend / push-out explainer. Apex, Accord, Open access are 06-08.
 Canister release at 1,000 m (main brief) still happens over the target after the high cruise. Its section 11 is the page outline; keep
 copy and figures consistent with it. When versions or sections disagree, the newest and most specific text wins:
