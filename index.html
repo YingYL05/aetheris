@@ -1093,7 +1093,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'Seeding routes cross the mainland at cruise altitude, over coastal towns, farmland and the ridge behind them, then swing back out to sea and drop to 1,000 m over the burn scar. All they leave behind is a water-vapor trail.',
       specs: [['Cruise', 'Mach 6 in the upper stratosphere, above weather and air traffic'], ['Trail', 'Water vapor only'], ['Map', 'Coast and ridge shown, not to scale']],
       live: () => ['Seeders airborne', `${sim.airborne} of 8 shown`] },
-    { id: 'harvest', short: 'Harvesters', focus: [G.x, 0, G.z], ext: [58, 40], pin: [G.x, 3, G.z],
+    { id: 'harvest', short: 'Harvesters', focus: [G.x, 0, G.z], ext: [34, 23], pin: [G.x, 3, G.z],
       code: 'AETH//01-I', title: 'Leviathan-class harvesters',
       body: 'A Leviathan sweeps the gyre with an electromagnetic net and forges the catch into drone parts and coral-seed scaffolds. Sweep drones from its hive vacuum microplastics with acoustic vortexes.',
       specs: [['Fleet', '64 Leviathan-class trimarans, 500+ m'], ['Net', 'Kilometer-wide sweep: macro-plastics, ghost nets, chemical pollutants'], ['Forge', 'Onboard 3D-printing foundries'], ['Hive', 'Thousands of drones: launch, recharge, data offload']],
@@ -1151,7 +1151,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     { text: 'Wave farm · power', at: [P.x + 54, 1.5, P.z + 24] },
     { text: 'Foundry pier', at: [P.x - 20, 14, P.z - 35] },
     { text: 'Shipyard · Leviathan refit', at: [P.x + 20, 12, P.z - 36] },
-    { text: 'Leviathan docks', at: [P.x, 10, P.z - 86] },
+    { text: 'Leviathan berths', at: [P.x, 7, P.z - 46] },
     { text: 'Flight pier · runway + catapult', at: [P.x + 56, 3, P.z - 10] },
     { text: '↑ Apex Station · GEO 36,000 km', at: [P.x + 1.5, MIDWAY_Y + 14, P.z] },
     { text: 'L1 · ~1.5M km · not to scale', at: [L1P.x, L1P.y - 6, L1P.z] }
@@ -1731,7 +1731,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       const gTrolley = box(1.4, 0.8, 1.4, M.accent, um - 4, ARM_TOP + H - 2.2, 1.5, grp);
       const gCable = box(0.06, 1, 0.06, M.steel, um - 4, 0, 1.5, grp);
       const gLoad = box(3, 0.22, 2, M.trim, um - 4, 0, 1.5, grp);
-      const sparks = [[-3, 2.2, 3.9], [2, 1.6, -3.4], [5, 2.6, 1]].map(([du, y, v]) => box(0.22, 0.22, 0.22, M.glow, um + du, y, v, grp));
+      const sparks = [[-6, 1.4, 1.1], [-3.5, 1, -1.3], [4.5, 1.6, 0.9], [7, 1.1, -1]].map(([du, y, v]) => box(0.22, 0.22, 0.22, M.glow, um + du, y, v, grp));
       HARBOR.yard = { gBridge, gTrolley, gCable, gLoad, sparks, um, top: ARM_TOP + H - 2.2 };
       const STACK = [M.trim, M.glass, M.steel];
       [-1, 1].forEach((sv) => {
@@ -1766,39 +1766,35 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       }
     }
   });
-  // Leviathan docks: a quay joining the foundry and shipyard pier tips closes their bay into a harbor; three finger
-  // piers run out to sea from it with Leviathan berths between them (ships are added with the fleet)
-  // The quay meets the inner corners of both pier tips and stops short of the shipyard's sea channel
-  const DOCK_Z = P.z - 60;
-  box(54, 1.4, 6, M.ceramic, P.x, 0.15, DOCK_Z);
-  box(54.1, 0.25, 6.1, M.trim, P.x, 1.2, DOCK_Z);
-  for (let x = -24; x <= 24; x += 8) cyl(0.8, 0.8, DEPTH + 0.3, M.ceramic, P.x + x, -DEPTH, DOCK_Z, 10);
-  const FINGERS = [-18, 0, 18];
-  FINGERS.forEach((fx) => {
-    box(3, 1.4, 26, M.ceramic, P.x + fx, 0.15, DOCK_Z - 16);
-    box(3.1, 0.25, 26.1, M.trim, P.x + fx, 1.2, DOCK_Z - 16);
-    for (let z = -6; z >= -28; z -= 7) cyl(0.6, 0.6, DEPTH + 0.3, M.ceramic, P.x + fx, -DEPTH, DOCK_Z + z, 10);
-    for (let z = -8; z >= -26; z -= 6) cyl(0.18, 0.24, 0.5, M.steel, P.x + fx + 1.2, 1.55, DOCK_Z + z, 8);   // bollards
-  });
-  // Container stacks on the fingers for the cranes to work from
+  // Leviathan berths inside the city: the bay between the foundry and shipyard piers is the harbor. Ships moor
+  // along the foundry pier's wing and the shipyard pier's tip; jib cranes on the decks swing containers from stacks
+  // onto them. Positions are in each pier's frame (u out along it, v across), turned into world coordinates.
+  const pierAt = (deg, u, v) => { const a = deg * Math.PI / 180; return [P.x + Math.cos(a) * u - Math.sin(a) * v, P.z + Math.sin(a) * u + Math.cos(a) * v]; };
+  const pierYaw = (deg) => { const a = deg * Math.PI / 180; return Math.atan2(Math.cos(a), Math.sin(a)); };
+  const BERTHS = [{ deg: 240, u: 41, v: 17.4, scaffold: true }, { deg: 300, u: 55, v: -11.5, scaffold: false }];
   const STK = [M.trim, M.glass, M.steel];
-  FINGERS.forEach((fx, i) => { for (let k = 0; k < 3; k++) box(1.2, 1 + (k % 2) * 1.05, 2.4, STK[(i + k) % 3], P.x + fx, 1.55, DOCK_Z - 16 - k * 2.6); });
-  // Jib cranes at the finger roots: each swings from its stack (pointing out along the finger) to a berth
-  const dockCranes = [[-18, 1], [0, 1], [18, -1]].map(([fx, side], i) => {
-    const h = 9, base = new T.Group();
-    base.position.set(P.x + fx, 1.55 + h, DOCK_Z - 12); world.add(base);
-    box(0.9, h, 0.9, M.ceramic, 0, -h, 0, base);
-    box(1.4, 1, 1.4, M.trim, 0, -0.5, 0, base);
+  // Cranes: pier, crane position, pick direction (toward its stack) and drop direction (toward the ship), as (du, dv)
+  const CRANES = [[240, 39.5, 13.2, [-1, 0], [0, 1]], [240, 43.5, 13.2, [1, 0], [0, 1]], [300, 53, -7.4, [1, 0], [0, -1]]];
+  const dockCranes = CRANES.map(([deg, u, v, pick, drop], i) => {
+    const h = 6, R = 4, [x, z] = pierAt(deg, u, v), base = new T.Group();
+    base.position.set(x, ARM_TOP + h, z); world.add(base);
+    box(0.6, h, 0.6, M.ceramic, 0, -h, 0, base);
+    box(1, 0.7, 1, M.trim, 0, -0.35, 0, base);
     const jib = new T.Group(); base.add(jib);
-    box(9, 0.45, 0.6, M.ceramic, 2.5, 0.5, 0, jib);
-    box(2, 1, 1.2, M.steel, -2.4, 0.2, 0, jib);   // counterweight
-    const cable = box(0.05, 1, 0.05, M.steel, 6, 0, 0, jib);
-    const load = box(1.2, 1, 2.4, STK[i % 3], 6, 0, 0, jib);
-    // Rotation y maps the jib's +x to (cos a, -sin a): pick along the finger (-z), drop over the berth to one side
-    return { jib, cable, load, h, a0: Math.PI / 2, a1: side > 0 ? 0 : Math.PI, ph: i * 5.3 };
+    box(6.2, 0.32, 0.42, M.ceramic, 1.6, 0.35, 0, jib);
+    box(1.3, 0.7, 0.8, M.steel, -1.6, 0.15, 0, jib);   // counterweight
+    const cable = box(0.04, 1, 0.04, M.steel, R, 0, 0, jib);
+    const load = box(0.8, 0.7, 1.6, STK[i % 3], R, 0, 0, jib);
+    // World direction of a pier-frame step, then the jib angle that points there (rotation y maps +x to (cos a, -sin a))
+    const dir = ([du, dv]) => { const [px, pz] = pierAt(deg, u + du, v + dv); return Math.atan2(-(pz - z), px - x); };
+    const [sx, sz] = pierAt(deg, u + pick[0] * R, v + pick[1] * R);
+    for (let k = 0; k < 2; k++) box(0.8, 0.7, 1.6, STK[(i + k) % 3], sx, ARM_TOP + k * 0.7, sz).rotation.y = pierYaw(deg) - Math.PI / 2;
+    let a0 = dir(pick), a1 = dir(drop);
+    if (a1 - a0 > Math.PI) a1 -= Math.PI * 2; else if (a0 - a1 > Math.PI) a1 += Math.PI * 2;
+    return { jib, cable, load, h, a0, a1, ph: i * 5.3 };
   });
 
-  // Scenery trees (city parks and distant islands): lollipop crowns on thin trunks
+    // Scenery trees (city parks and distant islands): lollipop crowns on thin trunks
   function plantTrees(list, parent = world) {
     const crowns = new T.InstancedMesh(new T.SphereGeometry(1, 10, 8), M.crown, list.length);
     const trunks = new T.InstancedMesh(new T.CylinderGeometry(0.1, 0.12, 1, 6), M.trim, list.length);
@@ -2270,7 +2266,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
 
   // ----- Harvesters, gyre plastic -----
   const gyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
-    const a = k / 12 * Math.PI * 2, r = 11 + Math.sin(a * 2) * 2.2;
+    const a = k / 12 * Math.PI * 2, r = 5.4 + Math.sin(a * 2) * 1.1;
     return new T.Vector3(G.x + Math.cos(a) * r, 0.1, G.z + Math.sin(a) * r * 0.8);
   }), true);
   function makeCat() {
@@ -2280,6 +2276,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     box(2.2, 0.08, 1.8, M.glass, 0, 0.92, 0, g).rotation.x = 0.15;
     const v = new T.Mesh(new T.RingGeometry(1.6, 2, 32), M.vortex);
     v.rotation.x = -Math.PI / 2; v.position.y = -0.3; g.add(v);
+    g.scale.setScalar(0.45);
     world.add(g); return { g, v };
   }
   const cats = [0, 1, 2].map((k) => ({ ...makeCat(), t: k / 3 }));
@@ -2287,7 +2284,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // Leviathan-class mothership: trimaran with sanctuary decks, forge, stern drydock, solar sails and a trailing net
   const outerGyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
     const a = k / 12 * Math.PI * 2;
-    return new T.Vector3(G.x + Math.cos(a) * 15.5, 0.1, G.z + Math.sin(a) * 12.5);
+    return new T.Vector3(G.x + Math.cos(a) * 7.6, 0.1, G.z + Math.sin(a) * 6.2);
   }), true);
   const lev = new T.Group();
   box(2.6, 1.3, 15, M.accent, 0, -0.5, 0, lev);
@@ -2324,6 +2321,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   for (let k = 0; k < 12; k++) netPts.push(arc[k], arc[k + 1]);
   for (let k = 1; k < 12; k += 2) netPts.push(arc[k], new T.Vector3(0, 0.12, -7.6));
   lev.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(netPts), lineMat));
+  // A Leviathan is about twice a carrier (~660 m) against a city ~28 km across, so it sits at roughly a twentieth of
+  // the city's width here (towers are exaggerated, ships less so). Every clone below inherits this scale.
+  const LEV_S = 0.45;
+  lev.scale.setScalar(LEV_S);
   world.add(lev);
   const levState = { t: 0.55 };
   // A second Leviathan sweeps a wider loop, so the gyre reads as a fleet at work
@@ -2332,20 +2333,25 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   if (HARBOR) {
     const refit = lev.clone();
     refit.children.filter((c) => c.isLineSegments).forEach((c) => refit.remove(c));
-    refit.position.set(HARBOR.x, 0.05, HARBOR.z); refit.rotation.y = HARBOR.yaw;
+    refit.position.set(HARBOR.x - HARBOR.ux * 5.2, 0.05, HARBOR.z - HARBOR.uz * 5.2); refit.rotation.y = HARBOR.yaw;
     world.add(refit);
+    const refit2 = refit.clone();
+    refit2.position.set(HARBOR.x + HARBOR.ux * 5.2, 0.05, HARBOR.z + HARBOR.uz * 5.2);
+    world.add(refit2);
     HARBOR.refit = refit;
   }
-  // Two Leviathans berthed between the finger piers, one in scaffolding for work, and smaller ships at the docks
-  [[-9, true], [9, false]].forEach(([bx, scaffold]) => {
+  // Leviathans at their berths, one in scaffolding for work, and smaller ships moored round the harbor
+  BERTHS.forEach(({ deg, u, v, scaffold }) => {
     const berth = lev.clone();
     berth.children.filter((c) => c.isLineSegments).forEach((c) => berth.remove(c));
-    berth.position.set(P.x + bx, 0.05, DOCK_Z - 17); berth.rotation.y = Math.PI;
+    const [x, z] = pierAt(deg, u, v);
+    berth.position.set(x, 0.05, z); berth.rotation.y = pierYaw(deg);
     world.add(berth);
     if (scaffold) {
-      [[-5.4, -9], [5.4, -9], [-5.4, 9], [5.4, 9]].forEach(([dx, dz]) => box(0.25, 6.5, 0.25, M.trim, P.x + bx + dx, 0, DOCK_Z - 17 + dz));
-      [-5.4, 5.4].forEach((dx) => [2.4, 4.6, 6.5].forEach((y) => box(0.18, 0.18, 18, M.trim, P.x + bx + dx, y, DOCK_Z - 17)));
-      [-9, 9].forEach((dz) => box(10.8, 0.18, 0.18, M.trim, P.x + bx, 6.5, DOCK_Z - 17 + dz));
+      // Built in the ship's own units, so it scales with it
+      [[-5.4, -9], [5.4, -9], [-5.4, 9], [5.4, 9]].forEach(([dx, dz]) => box(0.4, 7, 0.4, M.trim, dx, 0, dz, berth));
+      [-5.4, 5.4].forEach((dx) => [2.6, 4.8, 7].forEach((y) => box(0.3, 0.3, 18, M.trim, dx, y, 0, berth)));
+      [-9, 9].forEach((dz) => box(10.8, 0.3, 0.3, M.trim, 0, 7, dz, berth));
     }
   });
   function makeShip(len, cargo) {
@@ -2356,27 +2362,27 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     box(1.54, 0.35, 1.64, M.glass, 0, 1.05, -len / 2 + 1.2, g);
     cyl(0.05, 0.05, 1.6, M.steel, 0, 1.5, -len / 2 + 1.2, 5, g);
     if (cargo) for (let k = 0; k < Math.floor(len / 2.4) - 1; k++) box(1.4, 0.7, 1.9, STK[k % 3], 0, 0.4, -len / 2 + 3 + k * 2.2, g);
+    g.scale.setScalar(0.5);   // supply ships and tugs, small beside a Leviathan
     world.add(g); return g;
   }
-  // Supply ships and tugs: two moored inside the harbor along the quay, two outside the outer fingers
-  [[-6, DOCK_Z + 4.2, Math.PI / 2, 8, true], [8, DOCK_Z + 4.2, -Math.PI / 2, 5, false],
-   [-22, DOCK_Z - 18, 0, 9, true], [22, DOCK_Z - 15, Math.PI, 5, false]].forEach(([x, z, yaw, len, cargo]) => {
-    const sh = makeShip(len, cargo); sh.position.set(P.x + x, 0.3, z); sh.rotation.y = yaw;
+  [[240, 27, 10.4, 8, true], [300, 27, -10.4, 5, false], [240, 55, 10.4, 9, true], [300, 46, -16.3, 5, false]].forEach(([deg, u, v, len, cargo]) => {
+    const [x, z] = pierAt(deg, u, v), sh = makeShip(len, cargo);
+    sh.position.set(x, 0.15, z); sh.rotation.y = pierYaw(deg);
   });
-  const wideGyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
+    const wideGyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
     const a = k / 12 * Math.PI * 2;
-    return new T.Vector3(G.x + Math.cos(a) * 30, 0.1, G.z + Math.sin(a) * 22);
+    return new T.Vector3(G.x + Math.cos(a) * 15, 0.1, G.z + Math.sin(a) * 11);
   }), true);
   const drones = [0, 1, 2, 3].map((k) => {
     const m = shade(new T.Mesh(new T.SphereGeometry(0.4, 10, 6), M.accent));
-    m.scale.set(1.3, 0.9, 2.1); world.add(m); return { m, k };
+    m.scale.set(0.65, 0.45, 1.05); world.add(m); return { m, k };
   });
   const netCenter = new T.Vector3();
   const PLASTIC = 70;
-  const plasticMesh = new T.InstancedMesh(new T.BoxGeometry(0.35, 0.12, 0.35), M.inst, PLASTIC);
+  const plasticMesh = new T.InstancedMesh(new T.BoxGeometry(0.2, 0.08, 0.2), M.inst, PLASTIC);
   world.add(plasticMesh);
   const specks = Array.from({ length: PLASTIC }, () => ({ x: 0, z: 0, on: true, back: 0 }));
-  function placeSpeck(s) { const a = Math.random() * Math.PI * 2, r = 6 + Math.random() * 10; s.x = G.x + Math.cos(a) * r; s.z = G.z + Math.sin(a) * r * 0.8; s.on = true; }
+  function placeSpeck(s) { const a = Math.random() * Math.PI * 2, r = 3 + Math.random() * 5; s.x = G.x + Math.cos(a) * r; s.z = G.z + Math.sin(a) * r * 0.8; s.on = true; }
   specks.forEach(placeSpeck);
   function drawSpecks() {
     specks.forEach((s, i) => {
@@ -2437,6 +2443,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   hullM.scale.set(1, 0.85, 1.5); manned.add(hullM);
   const dome = shade(new T.Mesh(new T.SphereGeometry(0.45, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.glass));
   dome.position.set(0, 0.35, 0.5); manned.add(dome);
+  manned.scale.setScalar(0.6);
   world.add(manned);
   const ventTop = new T.Vector3(VENT.x - 1.5, -DEPTH + 3, VENT.z + 1.5);
   let diveLogged = false;
@@ -2614,10 +2621,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     // Shipyard: the gantry moves between spots on the ship, lowers a plate, holds while it's welded, lifts again
     if (HARBOR && HARBOR.yard) {
       const y = HARBOR.yard, c = (now / 1000) % 16, spot = Math.floor(now / 16000) % 3;
-      const SPOTS = [[-4, 1.5], [1.5, -2], [5, 1.2]], [su, sv] = SPOTS[spot], [pu, pv] = SPOTS[(spot + 2) % 3];
+      const SPOTS = [[-6, 0.8], [4.5, -0.9], [-3, -0.6]], [su, sv] = SPOTS[spot], [pu, pv] = SPOTS[(spot + 2) % 3];
       const mv = smooth(Math.min(1, c / 4));                          // 0-4 s travel from the last spot
       const drop = c < 4 ? 0 : c < 6.5 ? smooth((c - 4) / 2.5) : c < 11 ? 1 : c < 13.5 ? 1 - smooth((c - 11) / 2.5) : 0;
-      const u = y.um + pu + (su - pu) * mv, v = pv + (sv - pv) * mv, hookY = y.top - 0.3 - drop * 3.3;
+      const u = y.um + pu + (su - pu) * mv, v = pv + (sv - pv) * mv, hookY = y.top - 0.3 - drop * 4.4;
       y.gBridge.position.x = u; y.gTrolley.position.x = u; y.gTrolley.position.z = v;
       y.gCable.position.set(u, (y.top + hookY) / 2, v); y.gCable.scale.y = Math.max(0.05, y.top - hookY);
       y.gLoad.position.set(u, hookY - 0.15, v);
@@ -2630,9 +2637,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       const turn = c < 4 ? 0 : c < 8 ? k((c - 4) / 4) : c < 12 ? 1 : k(1 - (c - 12) / 4);
       cr.jib.rotation.y = cr.a0 + (cr.a1 - cr.a0) * turn;
       const low = c < 2 ? k(c / 2) : c < 4 ? k(1 - (c - 2) / 2) : c >= 8 && c < 10 ? k((c - 8) / 2) : c >= 10 && c < 12 ? k(1 - (c - 10) / 2) : 0;
-      const hook = -0.7 - low * (cr.h - 3.5);   // hook height below the jib
-      cr.cable.position.y = (0.25 + hook) / 2; cr.cable.scale.y = 0.25 - hook;
-      cr.load.position.y = hook - 0.5;
+      const hook = -0.4 - low * (cr.h - 1.6);   // hook height below the jib, down to the deck stacks
+      cr.cable.position.y = (0.2 + hook) / 2; cr.cable.scale.y = 0.2 - hook;
+      cr.load.position.y = hook - 0.35;
       cr.load.visible = c >= 1 && c < 10;   // picked up at the stack, set down on the ship
     });
     // City traffic    // City traffic
@@ -2785,7 +2792,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     // Harvesters sweep the gyre
     let specksChanged = false;
     cats.forEach((c) => {
-      c.t = (c.t + dt * 3.2 / gyre.getLength()) % 1;
+      c.t = (c.t + dt * 1.6 / gyre.getLength()) % 1;
       const p = gyre.getPointAt(c.t);
       c.g.position.copy(p);
       gyre.getTangentAt(c.t, tan);
@@ -2793,13 +2800,13 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       const pulse = 1 + Math.sin(now / 300 + c.t * 20) * 0.25;
       c.v.scale.set(pulse, pulse, pulse);
       specks.forEach((s) => {
-        if (s.on && (s.x - p.x) ** 2 + (s.z - p.z) ** 2 < 6.5) {
+        if (s.on && (s.x - p.x) ** 2 + (s.z - p.z) ** 2 < 1.6) {
           s.on = false; s.back = now + 6000 + Math.random() * 8000; sim.plastic++; plastic += 0.4; specksChanged = true;
           if (sim.plastic % 15 === 0) log('SWEEP-0' + (cats.indexOf(c) + 1), `Vortex cycle complete · ${sim.plastic} captures this visit`);
         }
       });
     });
-    levState.t = (levState.t + dt * 1.5 / outerGyre.getLength()) % 1;
+    levState.t = (levState.t + dt * 0.8 / outerGyre.getLength()) % 1;
     const lp = outerGyre.getPointAt(levState.t);
     outerGyre.getTangentAt(levState.t, tan);
     lev.position.set(lp.x, 0.05 + Math.sin(now / 1400) * 0.06, lp.z);
@@ -2810,15 +2817,15 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     lev2.position.set(lp2.x, 0.05 + Math.sin(now / 1600) * 0.06, lp2.z);
     lev2.rotation.y = Math.atan2(...(() => { const v = wideGyre.getTangentAt(t2); return [v.x, v.z]; })());
     specks.forEach((s) => {
-      if (s.on && (s.x - netCenter.x) ** 2 + (s.z - netCenter.z) ** 2 < 26) {
+      if (s.on && (s.x - netCenter.x) ** 2 + (s.z - netCenter.z) ** 2 < 5.5) {
         s.on = false; s.back = now + 6000 + Math.random() * 8000; sim.plastic++; plastic += 1.2; specksChanged = true;
         if (sim.plastic % 20 === 0) log('LEVIATHAN-01', 'Net haul to forge · drone parts printed');
       }
     });
     drones.forEach((d) => {
-      const a = now / 2600 + d.k * Math.PI / 2, r = 6 + Math.sin(now / 1800 + d.k) * 3;
+      const a = now / 2600 + d.k * Math.PI / 2, r = 3 + Math.sin(now / 1800 + d.k) * 1.4;
       const x = lp.x + Math.cos(a) * r, z = lp.z + Math.sin(a) * r;
-      d.m.position.set(x, -1.6 - Math.sin(now / 1800 + d.k) * 1.2, z);
+      d.m.position.set(x, -0.8 - Math.sin(now / 1800 + d.k) * 0.6, z);
       d.m.rotation.y = -a;
     });
     specks.forEach((s) => { if (!s.on && now > s.back) { placeSpeck(s); specksChanged = true; } });
