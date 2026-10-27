@@ -531,3 +531,20 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   .teaser { padding: 26px; }
   .page-head { padding-top: 36px; }
 }
+
+/* Vehicles page: list, turntable, parts */
+.veh { display: grid; grid-template-columns: 230px minmax(0, 1fr) 330px; gap: 28px; align-items: start; }
+.veh-stage { position: relative; height: clamp(380px, 56vh, 600px); background: var(--bg-2); overflow: hidden; }
+.veh-stage canvas { display: block; cursor: grab; }
+.veh-stage.grabbing canvas { cursor: grabbing; }
+.veh-stage:focus-visible { outline-offset: -3px; }
+.sc-hint { position: absolute; left: 14px; bottom: 12px; color: var(--muted); font-size: 11px; pointer-events: none; }
+.sc-fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+.veh-info h2 { font-size: 28px; line-height: 1.1; margin: 8px 0 12px; }
+.veh-info p { margin: 0 0 16px; color: var(--muted); font-size: 15px; }
+.veh-link { margin: 28px 0 0; }
+@media (max-width: 1080px) {
+  .veh { grid-template-columns: 1fr; }
+  .veh-tabs { display: flex; overflow-x: auto; }
+  .veh-tabs button { flex: none; }
+}

@@ -33,6 +33,10 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   sample and the Apex debris tally use stand-ins when there's no live model. Header nav keeps the brief's labels
   (Fleet Tracker, Climate Telemetry, Accord Portal, Open APIs) plus Technology, with `aria-current="page"`. Each
   page has one h1 in a compact `.page-head` (home uses the hero). Section numbers restart per page.
+  `vehicles.html` (2026-10-27): a turntable viewer (`initShowcase`, `#showcase`) for eight vehicles with a parts
+  list each. It reuses the model's own builders, extracted at build time from `initModel` (makeClimber, the Angel
+  glider block, hullGeo/makeCat, the Leviathan block), so if those change, rebuild the showcase copy too. Drag or
+  arrow keys turn the model; `vehicles.html#leviathan` opens a vehicle. Linked from the header, footer and fleet section.
 - Run: `python -m http.server 4392` in this folder, then http://127.0.0.1:4392/. The user wants this project on
   localhost only (2026-10-25): don't republish it as an artifact unless asked. An old artifact copy exists at
   https://claude.ai/artifact/QagTVDZE4HUintYKJ4GHk6 (version 6, now stale).

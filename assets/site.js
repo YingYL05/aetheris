@@ -2148,6 +2148,302 @@
   }
   if ($('#stage')) initModel();
 
+  // ---------- Vehicle showcase (vehicles.html): each vehicle alone on a turntable, built by the model's own code ----------
+  function initShowcase() {
+    const host = $('#showcase');
+    if (!window.THREE) { host.querySelector('.sc-fallback').hidden = false; return; }
+    const T = THREE;
+    const renderer = new T.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+    host.prepend(renderer.domElement);
+    const scene = new T.Scene();
+    scene.background = new T.Color(0xe3e8ee);
+    const camera = new T.PerspectiveCamera(30, 1, 0.1, 200);
+    scene.add(new T.HemisphereLight(0xffffff, 0xaab4c0, 0.95));
+    const sun = new T.DirectionalLight(0xffffff, 0.7);
+    sun.position.set(-6, 12, 8); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+    Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7 });
+    scene.add(sun);
+    const floor = new T.Mesh(new T.CircleGeometry(5.6, 64), new T.MeshStandardMaterial({ color: 0xd5dde6, roughness: 1 }));
+    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+    const rim = new T.Mesh(new T.RingGeometry(5.5, 5.6, 64), new T.MeshBasicMaterial({ color: 0x0284c7 }));
+    rim.rotation.x = -Math.PI / 2; rim.position.y = 0.005; scene.add(rim);
+
+    const M = {};
+    const COL = { ceramic: 0xf1f4f8, trim: 0xc2cbd6, steel: 0x7b8899, accent: 0x0ea5e9, glass: 0x7c90a6, park: 0xa9cc93, crown: 0x86b97f };
+    Object.entries(COL).forEach(([k, c]) => { M[k] = new T.MeshStandardMaterial({ color: c, roughness: k === 'glass' ? 0.3 : 0.8, metalness: k === 'steel' ? 0.25 : 0 }); });
+    M.glow = new T.MeshBasicMaterial({ color: 0x7dd3fc });
+    M.vortex = new T.MeshBasicMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.4, side: T.DoubleSide, depthWrite: false });
+    const lineMat = new T.LineBasicMaterial({ color: 0x0369a1 });
+    const shade = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
+    const world = new T.Group();
+    function box(w, h, d, mat, x, y, z, parent = world) {
+      const m = shade(new T.Mesh(new T.BoxGeometry(w, h, d), mat));
+      m.position.set(x, y + h / 2, z); parent.add(m); return m;
+    }
+    function cyl(rt, rb, h, mat, x, y, z, seg = 20, parent = world) {
+      const m = shade(new T.Mesh(new T.CylinderGeometry(rt, rb, h, seg), mat));
+      m.position.set(x, y + h / 2, z); parent.add(m); return m;
+    }
+
+  function makeClimber(ox, oz) {
+    const g = new T.Group();
+    box(1.4, 2.4, 1.4, M.accent, 0, -1.2, 0, g);
+    box(1.44, 0.4, 1.44, M.glass, 0, 0.3, 0, g);
+    box(1.5, 0.2, 1.5, M.ceramic, 0, 1.2, 0, g);
+    box(1.5, 0.2, 1.5, M.ceramic, 0, -1.4, 0, g);
+    [-0.8, 0.6].forEach((y) => box(0.6, 0.3, 0.6, M.steel, -Math.sign(ox) * 0.95, y, -Math.sign(oz) * 0.95, g));
+    const dish = cyl(0.5, 0.2, 0.25, M.trim, 0, 1.4, 0, 12, g);
+    dish.rotation.z = -0.5;
+    world.add(g); return g;
+  }
+  const WING = [[0, 1.6], [2.6, -0.8], [2.5, -1.15], [0.8, -0.85], [0, -1.25], [-0.8, -0.85], [-2.5, -1.15], [-2.6, -0.8]];
+  const wingGeo = new T.ExtrudeGeometry(new T.Shape(WING.map(([x, z]) => new T.Vector2(x, z))), { depth: 0.08, bevelEnabled: false });
+  wingGeo.rotateX(Math.PI / 2); wingGeo.translate(0, 0.04, 0);
+  const spineGeo = new T.CylinderGeometry(0.17, 0.3, 3.2, 10); spineGeo.rotateX(Math.PI / 2);
+  const noseGeo = new T.ConeGeometry(0.17, 0.8, 10); noseGeo.rotateX(Math.PI / 2);
+  function edge(x0, z0, x1, z1, mat, y, parent) {
+    const m = new T.Mesh(new T.BoxGeometry(Math.hypot(x1 - x0, z1 - z0), 0.05, 0.1), mat);
+    m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); m.rotation.y = -Math.atan2(z1 - z0, x1 - x0); parent.add(m);
+  }
+  const podGeo = new T.CylinderGeometry(0.13, 0.13, 1, 8); podGeo.rotateX(Math.PI / 2);
+  function makeGlider(scale = 0.7) {
+    const g = new T.Group();
+    g.add(shade(new T.Mesh(wingGeo, M.accent)));
+    const spine = shade(new T.Mesh(spineGeo, M.ceramic)); spine.position.set(0, 0.12, 0.05); g.add(spine);
+    const nose = shade(new T.Mesh(noseGeo, M.ceramic)); nose.position.set(0, 0.12, 2.05); g.add(nose);
+    box(0.62, 0.22, 1.9, M.steel, 0, -0.26, -0.15, g);
+    box(0.5, 0.14, 0.06, M.glass, 0, -0.22, 0.82, g);
+    [-1, 1].forEach((sx) => {
+      edge(0.25 * sx, 1.35, 2.55 * sx, -0.78, M.glow, 0.06, g);
+      const fin = box(0.07, 0.75, 0.75, M.ceramic, 0.42 * sx, 0.1, -0.95, g);
+      fin.rotation.z = -0.35 * sx;
+      const pod = shade(new T.Mesh(podGeo, M.ceramic)); pod.position.set(1.15 * sx, -0.12, -0.25); g.add(pod);
+      box(0.05, 0.4, 0.45, M.ceramic, 2.52 * sx, 0.04, -0.98, g).rotation.z = -0.25 * sx;
+      box(0.12, 0.08, 0.12, M.glow, 2.58 * sx, 0.05, -0.78, g);
+    });
+    g.scale.setScalar(scale);
+    world.add(g); return g;
+  }
+  function hullGeo(W, Lh, Hh) {
+    const b = Lh / 2, t = b - Math.min(Lh * 0.2, W * 1.4);
+    const g = new T.ExtrudeGeometry(new T.Shape([[-W / 2, -b], [W / 2, -b], [W / 2, t], [0, b], [-W / 2, t]].map(([x, y]) => new T.Vector2(x, y))), { depth: Hh, bevelEnabled: false });
+    g.rotateX(Math.PI / 2); g.translate(0, Hh, 0);
+    return g;
+  }
+  const hull = (W, Lh, Hh, mat, x, y, z, parent) => { const m = shade(new T.Mesh(hullGeo(W, Lh, Hh), mat)); m.position.set(x, y, z); parent.add(m); return m; };
+  // Sweep drone: a small catamaran with pointed twin hulls, a solar deck, a sensor mast and an acoustic vortex ring
+  function makeCat() {
+    const g = new T.Group();
+    [-0.9, 0.9].forEach((x) => { hull(0.6, 3.8, 0.6, M.accent, x, 0, 0, g); box(0.62, 0.12, 3, M.ceramic, x, 0.6, -0.3, g); });
+    box(2.4, 0.3, 2.2, M.ceramic, 0, 0.6, -0.2, g);
+    box(2.2, 0.08, 1.8, M.glass, 0, 0.92, -0.2, g).rotation.x = 0.15;
+    cyl(0.04, 0.04, 1, M.steel, 0, 0.9, 0.8, 5, g);
+    box(0.16, 0.12, 0.16, M.glow, 0, 1.9, 0.8, g);
+    const v = new T.Mesh(new T.RingGeometry(1.6, 2, 32), M.vortex);
+    v.rotation.x = -Math.PI / 2; v.position.y = -0.3; g.add(v);
+    g.scale.setScalar(0.72);
+    world.add(g); return { g, v };
+  }
+  const lev = new T.Group();
+  hull(2.6, 15, 1.3, M.accent, 0, -0.5, 0, lev);
+  hull(1, 10, 0.9, M.accent, -4.2, -0.4, -0.5, lev);
+  hull(1, 10, 0.9, M.accent, 4.2, -0.4, -0.5, lev);
+  // Drone pads on the aft deck, where the hive launches and recharges its sweep drones
+  [[1.5, -3.2], [1.5, 0.3], [-1.6, 0.3]].forEach(([x, z]) => { cyl(0.6, 0.6, 0.05, M.trim, x, 1.15, z, 20, lev); cyl(0.62, 0.62, 0.03, M.glow, x, 1.2, z, 20, lev); });
+  // Side decks over the outriggers make the top one broad platform, a small city at sea
+  [-1, 1].forEach((sx) => box(2.6, 0.3, 11, M.ceramic, sx * 3.85, 0.85, 0.3, lev));
+  // Starboard: a flight deck, flown like a carrier's, with parked aircraft and a small control island
+  box(2.5, 0.04, 10.8, M.steel, 3.85, 1.15, 0.3, lev);
+  for (let z = -4.6; z < 5.6; z += 1.4) box(0.12, 0.02, 0.6, M.ceramic, 3.85, 1.19, z, lev);
+  box(0.5, 0.9, 1.2, M.ceramic, 2.85, 1.15, -0.9, lev);
+  box(0.54, 0.3, 1.24, M.glass, 2.85, 1.75, -0.9, lev);
+  function makeJet(parent) {
+    const j = new T.Group();
+    box(0.32, 0.22, 1.5, M.ceramic, 0, 0, 0, j);
+    const nose = shade(new T.Mesh(new T.ConeGeometry(0.16, 0.5, 6), M.ceramic)); nose.rotation.x = Math.PI / 2; nose.position.set(0, 0.11, 1); j.add(nose);
+    box(1.3, 0.05, 0.45, M.accent, 0, 0.08, -0.1, j);
+    [-0.14, 0.14].forEach((x) => box(0.04, 0.35, 0.3, M.ceramic, x, 0.2, -0.6, j).rotation.z = x * 2);
+    parent.add(j); return j;
+  }
+  // A carrier jet is about a sixteenth of its ship's length
+  [[4.5, -3.6], [4.5, -2.6], [3.4, 4.6], [3.4, 3.8]].forEach(([x, z]) => { const j = makeJet(lev); j.scale.setScalar(0.5); j.position.set(x, 1.19, z); j.rotation.y = 0.6; });
+  // Port: the campus. Habitat blocks with lit windows and green roofs, a slim tower, gardens and trees.
+  [-3.8, 2.6].forEach((z) => {
+    box(1.8, 1.4, 2.2, M.ceramic, -3.85, 1.15, z, lev);
+    box(1.84, 0.25, 2.24, M.glass, -3.85, 1.95, z, lev);
+    box(0.04, 0.14, 1.8, M.glow, -4.77, 1.6, z, lev);
+    box(1.6, 0.06, 2, M.park, -3.85, 2.55, z, lev);
+  });
+  box(1.2, 3, 1.2, M.ceramic, -3.85, 1.15, -0.6, lev);
+  box(1.24, 0.3, 1.24, M.glass, -3.85, 3.3, -0.6, lev);
+  box(0.04, 1.6, 0.14, M.glow, -4.46, 1.9, -0.6, lev);
+  box(2.4, 0.04, 1.6, M.park, -3.85, 1.15, 4.8, lev);
+  [[-3.3, 4.7], [-4.4, 5], [-3.4, 0.9], [-4.4, 0.8], [-3.3, -2]].forEach(([x, z]) => {
+    cyl(0.05, 0.07, 0.5, M.trim, x, 1.2, z, 5, lev);
+    const crown = shade(new T.Mesh(new T.SphereGeometry(0.38, 8, 6), M.crown)); crown.position.set(x, 1.95, z); lev.add(crown);
+  });
+  [-3.5, 0.5, 4].forEach((z) => box(9.4, 0.3, 0.8, M.ceramic, 0, 0.45, z, lev));
+  box(5, 0.35, 11.5, M.ceramic, 0, 0.8, 0.3, lev);
+  box(3.2, 2.2, 4, M.ceramic, 0, 1.15, 3, lev);
+  box(3.3, 0.6, 4.1, M.glass, 0, 2.6, 3, lev);
+  box(2.6, 0.5, 3, M.ceramic, 0, 3.2, 3.2, lev);
+  box(1.8, 1.2, 1.8, M.trim, 0, 1.15, -3.2, lev);
+  cyl(0.25, 0.3, 1.6, M.steel, 0.5, 2.35, -3.4, 8, lev);
+  box(2.2, 1.2, 0.2, M.glass, 0, -0.1, -7.6, lev);
+  cyl(0.9, 0.9, 0.06, M.glass, 0, 1.15, -1.2, 20, lev);
+  [[-1.8, -0.2], [1.8, -1.6]].forEach(([x, z]) => {
+    box(0.12, 4.2, 0.12, M.steel, x, 1.15, z, lev);
+    const sail = box(0.08, 2.4, 2.8, M.glass, x, 2.7, z, lev);
+    sail.rotation.y = 0.35;
+  });
+  [-1.32, 1.32].forEach((x) => box(0.05, 0.28, 12, M.glass, x, -0.05, 0.2, lev));
+  [-4.72, 4.72].forEach((x) => box(0.05, 0.22, 8, M.glass, x, -0.1, -0.5, lev));
+  box(0.16, 2.2, 0.16, M.steel, 0, 3.7, 3.6, lev);
+  box(1.6, 0.12, 0.3, M.trim, 0, 5.2, 3.6, lev);
+  cyl(0.35, 0.35, 0.22, M.ceramic, 0, 5.9, 3.6, 12, lev);
+  cyl(0.18, 0.22, 1.4, M.trim, 1.9, 1.15, -5, 8, lev);
+  const jib = box(0.18, 0.18, 3.4, M.trim, 1.9, 2.45, -6.2, lev); jib.rotation.x = -0.35;
+  [-3.2, -4.6].forEach((z) => box(1.4, 0.06, 1.1, M.glass, -1.75, 1.15, z, lev));
+  const netPts = [];
+  const arc = Array.from({ length: 13 }, (_, k) => {
+    const a = Math.PI * k / 12;
+    return new T.Vector3(Math.cos(a) * 6, 0.12, -11.5 - Math.sin(a) * 4);
+  });
+  netPts.push(new T.Vector3(-4.2, 0.12, -5.5), arc[12], new T.Vector3(4.2, 0.12, -5.5), arc[0]);
+  for (let k = 0; k < 12; k++) netPts.push(arc[k], arc[k + 1]);
+  for (let k = 1; k < 12; k += 2) netPts.push(arc[k], new T.Vector3(0, 0.12, -7.6));
+  lev.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(netPts), lineMat));
+
+    // The few small craft that the model builds inline
+    function makeHarvestDrone() {
+      const m = new T.Group();
+      const body = shade(new T.Mesh(new T.SphereGeometry(0.4, 16, 10), M.accent)); body.scale.set(0.8, 0.7, 2); m.add(body);
+      box(0.06, 0.5, 0.4, M.ceramic, 0, -0.25, -0.7, m);
+      box(0.9, 0.06, 0.35, M.ceramic, 0, -0.03, -0.7, m);
+      box(0.2, 0.14, 0.08, M.glow, 0, 0.05, 0.8, m);
+      return m;
+    }
+    function makeReefDrone() {
+      const m = new T.Group();
+      const hullM = shade(new T.Mesh(new T.SphereGeometry(0.75, 16, 12), M.accent)); hullM.scale.set(1, 0.8, 2); m.add(hullM);
+      const win = shade(new T.Mesh(new T.SphereGeometry(0.4, 12, 8), M.glass)); win.position.set(0, 0.15, 1.15); m.add(win);
+      box(0.08, 0.7, 0.6, M.ceramic, 0, 0, -1.3, m);
+      box(1.4, 0.08, 0.5, M.ceramic, 0, -0.04, -1.25, m);
+      const prop = new T.Mesh(new T.TorusGeometry(0.32, 0.06, 6, 16), M.steel); prop.position.z = -1.65; m.add(prop);
+      box(0.12, 0.12, 0.5, M.steel, 0, -0.45, 1.3, m);
+      box(0.18, 0.18, 0.18, M.glow, 0, -0.5, 1.6, m);
+      return m;
+    }
+    function makeQuad() {
+      const m = new T.Group();
+      box(0.55, 0.2, 0.55, M.ceramic, 0, -0.1, 0, m);
+      [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(([sx, sz]) => {
+        box(0.95, 0.07, 0.1, M.trim, sx * 0.34, 0, sz * 0.34, m).rotation.y = sx * sz > 0 ? -Math.PI / 4 : Math.PI / 4;
+        const r = new T.Mesh(new T.CylinderGeometry(0.42, 0.42, 0.04, 16), M.accent); r.position.set(sx * 0.68, 0.08, sz * 0.68); m.add(r);
+      });
+      box(0.14, 0.08, 0.14, M.glow, 0, 0.1, 0, m);
+      box(0.4, 0.34, 0.4, M.trim, 0, -0.62, 0, m);
+      return m;
+    }
+
+    // Each vehicle, sized to fill the stand; flying craft hover above it
+    const fit = (o, fly) => {
+      const bb = new T.Box3().setFromObject(o), size = bb.getSize(new T.Vector3());
+      const k = 7.4 / Math.max(size.x, size.z, size.y * 1.6);
+      o.scale.multiplyScalar(k);
+      const b2 = new T.Box3().setFromObject(o), c = b2.getCenter(new T.Vector3());
+      o.position.x -= c.x; o.position.z -= c.z; o.position.y += (fly ? 1.4 : 0.02) - b2.min.y;
+      const holder = new T.Group(); holder.add(o); holder.visible = false; scene.add(holder);
+      return holder;
+    };
+    const take = (o) => { world.remove(o); return o; };
+    const VEH = [
+      { id: 'angel', name: 'Angel-class glider', kind: 'Seeding glider · ~50 m', fly: true, make: () => take(makeGlider(1)),
+        blurb: 'Hangs under the Stratosphere Port, drops nose-down along the tether, and is bent into level flight by its magnets. Cruises at Mach 6, releases seed canisters 1,000 m over burned land, and glides home on sunlight.',
+        parts: [['Spine and nose', 'Ceramic-white composite'], ['Wings', 'Swept metamaterial solar wings for the glide home'], ['Leading edges', 'Bio-luminescent skin, pressurized before release'], ['Belly frame', 'Bio-metallic frame the tether inductors push on'], ['Intake', 'Ventral scramjet intake, lights at Mach 3'], ['Fins', 'Twin canted tail fins'], ['Pods', 'Seed canisters, released at 1,000 m'], ['Wingtips', 'Upturned winglets with lights']] },
+      { id: 'leviathan', name: 'Leviathan-class harvester', kind: 'Ocean harvester · ~660 m', make: () => lev,
+        blurb: 'A trimaran twice the length of an aircraft carrier: it sweeps plastic from the gyres, forges it into drone parts, flies its own aircraft and houses a crew the size of a small town.',
+        parts: [['Hulls', 'Three hulls with pointed bows, windows along each'], ['Flight deck', 'Runway markings, parked jets, control island'], ['Campus', 'Habitat blocks, a slim tower, lawns and trees'], ['Bridge', 'Glass-banded bridge with a radar mast'], ['Sails', 'Two solar sails on masts'], ['Forge', 'Onboard 3D-printing foundry and its stack'], ['Hive', 'Glowing drone pads and hangar doors'], ['Crane', 'Stern crane for the net and drones'], ['Net', 'Trailing electromagnetic sweep net']] },
+      { id: 'jet', name: 'Leviathan carrier jet', kind: 'Air wing', fly: true, make: () => { const j = makeJet(world); return take(j); },
+        blurb: 'Each Leviathan flies its own aircraft off the flight deck like a carrier: patrols, survey runs and transfers to the city.',
+        parts: [['Fuselage', 'Ceramic body with a pointed nose'], ['Wings', 'Swept wings, blue for things that move'], ['Tails', 'Twin canted tail fins']] },
+      { id: 'sweep', name: 'Sweep drone', kind: 'Leviathan hive · surface', make: () => take(makeCat().g),
+        blurb: 'A small catamaran launched from a Leviathan’s hive. It circles the gyre and pulls in microplastics with an acoustic vortex.',
+        parts: [['Hulls', 'Twin pointed hulls'], ['Deck', 'Solar panel deck'], ['Mast', 'Sensor mast with a beacon'], ['Vortex', 'Acoustic vortex ring that gathers plastic']] },
+      { id: 'harvest-drone', name: 'Harvest drone', kind: 'Leviathan hive · underwater', fly: true, make: () => makeHarvestDrone(),
+        blurb: 'Runs just under the surface round its Leviathan, herding plastic toward the net.',
+        parts: [['Body', 'Torpedo hull'], ['Fins', 'Steering fin and tail planes'], ['Sensor', 'Glowing sensor eye at the nose']] },
+      { id: 'reef-drone', name: 'Reef drone', kind: 'Reef restoration', fly: true, make: () => makeReefDrone(),
+        blurb: 'Patrols bleached reef and micro-welds heat-tolerant polyps onto it; the coral it passes comes back to colour.',
+        parts: [['Hull', 'Submersible hull with a viewport'], ['Fins', 'Tail fin and stabilizers'], ['Thruster', 'Ring-guarded propeller'], ['Tool', 'Micro-welding tip for the polyps']] },
+      { id: 'climber', name: 'Tether climber', kind: 'Space elevator', make: () => take(makeClimber(1, 0)),
+        blurb: 'Rides the tether on maglev tracks between the anchor tower and the Apex Station, powered by a laser beamed from below.',
+        parts: [['Car', 'Pressurized cargo and crew car'], ['Windows', 'Glazed band round the car'], ['Clamps', 'Maglev clamps that hold the tether'], ['Receiver', 'Dish that catches the power laser']] },
+      { id: 'quad', name: 'City drone', kind: 'Earth Port', fly: true, make: () => makeQuad(),
+        blurb: 'Quadcopters that hop between rooftops across the city, some carrying parcels.',
+        parts: [['Body', 'Ceramic core'], ['Rotors', 'Four rotors on crossed arms'], ['Beacon', 'Blinking beacon'], ['Parcel', 'Underslung parcel']] }
+    ];
+    VEH.forEach((v) => { v.obj = fit(v.make(), v.fly); });
+
+    const tabs = $('#veh-tabs'), panel = $('#veh-panel');
+    let cur = 0, yaw = 0.6, drag = null, last = performance.now();
+    function show() {
+      VEH.forEach((v, i) => { v.obj.visible = i === cur; });
+      [...tabs.children].forEach((b, i) => { b.setAttribute('aria-selected', i === cur); b.tabIndex = i === cur ? 0 : -1; });
+      const v = VEH[cur];
+      panel.setAttribute('aria-labelledby', `veh-tab-${cur}`);
+      panel.innerHTML = `<span class="mono kicker">${v.kind}</span><h2>${v.name}</h2><p>${v.blurb}</p>
+        <dl class="specs">${v.parts.map(([k, d]) => `<div><dt>${k}</dt><dd>${d}</dd></div>`).join('')}</dl>`;
+      host.setAttribute('aria-label', `3D view of the ${v.name}. Drag, or use the left and right arrow keys, to turn it.`);
+    }
+    VEH.forEach((v, i) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.setAttribute('role', 'tab'); b.id = `veh-tab-${i}`; b.textContent = v.name;
+      b.setAttribute('aria-controls', 'veh-panel');
+      b.addEventListener('click', () => { cur = i; show(); });
+      b.addEventListener('keydown', (e) => {
+        const fwd = e.key === 'ArrowRight' || e.key === 'ArrowDown', back = e.key === 'ArrowLeft' || e.key === 'ArrowUp';
+        if (!fwd && !back) return;
+        e.preventDefault();
+        cur = (cur + (fwd ? 1 : -1) + VEH.length) % VEH.length;
+        show(); tabs.children[cur].focus();
+      });
+      tabs.appendChild(b);
+    });
+    const linked = VEH.findIndex((v) => '#' + v.id === location.hash);
+    if (linked >= 0) cur = linked;
+    show();
+
+    // Turn by dragging or with the arrow keys; it turns slowly on its own unless motion is paused or reduced
+    const cv = renderer.domElement;
+    cv.style.touchAction = 'pan-y';
+    cv.addEventListener('pointerdown', (e) => { drag = e.clientX; cv.setPointerCapture(e.pointerId); host.classList.add('grabbing'); });
+    cv.addEventListener('pointermove', (e) => { if (drag === null) return; yaw += (e.clientX - drag) * 0.01; drag = e.clientX; });
+    const end = () => { drag = null; host.classList.remove('grabbing'); };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+    host.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { yaw -= 0.26; e.preventDefault(); }
+      else if (e.key === 'ArrowRight') { yaw += 0.26; e.preventDefault(); }
+    });
+    const resize = () => {
+      const w = host.clientWidth, h = host.clientHeight;
+      renderer.setSize(w, h); camera.aspect = w / h;
+      const d = w / h < 1 ? 23 : 15;   // narrow stands need more distance to fit the wingspan
+      camera.position.set(0, d * 0.42, d); camera.lookAt(0, 1.2, 0); camera.updateProjectionMatrix();
+    };
+    new ResizeObserver(resize).observe(host); resize();
+    (function frame(now) {
+      requestAnimationFrame(frame);
+      const dt = Math.min(Math.max((now - last) / 1000, 0), 0.05); last = now;
+      if (drag === null && !paused && !reduceMQ.matches) yaw += dt * 0.25;
+      VEH[cur].obj.rotation.y = yaw;
+      renderer.render(scene, camera);
+    })(performance.now());
+  }
+  if ($('#showcase')) initShowcase();
+
   if (epEl) renderEp();
   tick(); setInterval(tick, 1000);
 })();
