@@ -110,6 +110,12 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   white until the drones restore them. Corals and fish use `M.coral`, transparent but fully opaque with renderOrder 3
   so they draw after the water layer and keep their colour, plus a slight glow in their own colour. Seagrass beds,
   rocks and two fish schools; three reef drones (scale 0.4) patrol the shelf; the vent sits just off it.
+  Leviathans as carriers and campuses (2026-10-27, user: they carry their own aircraft like a carrier and are a
+  small city at sea): side decks over the outriggers make one broad top; starboard is a flight deck with markings,
+  parked jets (`makeJet`) and a control island; port is a campus of habitat blocks with lit windows, green roofs, a
+  slim tower, lawn and trees. The two harvesting ships (`carriers`) each fly a jet round `CIRCUIT` (ship-local
+  touch-and-go loop) and have two tenders circling; docked clones carry the same deck with parked aircraft. Page copy
+  (harvest card, systems tab, fleet profile and its drawing) mentions the air wing and campus.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink
