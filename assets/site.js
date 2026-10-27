@@ -2165,10 +2165,17 @@
     sun.position.set(-6, 12, 8); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
     Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7 });
     scene.add(sun);
-    const floor = new T.Mesh(new T.CircleGeometry(5.6, 64), new T.MeshStandardMaterial({ color: 0xd5dde6, roughness: 1 }));
-    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-    const rim = new T.Mesh(new T.RingGeometry(5.5, 5.6, 64), new T.MeshBasicMaterial({ color: 0x0284c7 }));
-    rim.rotation.x = -Math.PI / 2; rim.position.y = 0.005; scene.add(rim);
+    // The stand is a drum of sea: a sandy bed, translucent water to the brim, a blue rim. Ships float at their
+    // waterline, underwater drones show through it, aircraft hover over it.
+    const bed = new T.Mesh(new T.CircleGeometry(5.6, 64), new T.MeshStandardMaterial({ color: 0xd8cdb4, roughness: 1 }));
+    bed.rotation.x = -Math.PI / 2; bed.position.y = -1.8; bed.receiveShadow = true; scene.add(bed);
+    const waterMat = new T.MeshStandardMaterial({ color: 0x2f7fd0, transparent: true, opacity: 0.42, roughness: 0.2, depthWrite: false });
+    const sea = new T.Mesh(new T.CircleGeometry(5.6, 64), waterMat);
+    sea.rotation.x = -Math.PI / 2; sea.receiveShadow = true; sea.renderOrder = 2; scene.add(sea);
+    const side = new T.Mesh(new T.CylinderGeometry(5.6, 5.6, 1.8, 64, 1, true), new T.MeshStandardMaterial({ color: 0x2f7fd0, transparent: true, opacity: 0.3, side: T.DoubleSide, depthWrite: false }));
+    side.position.y = -0.9; side.renderOrder = 2; scene.add(side);
+    const rim = new T.Mesh(new T.RingGeometry(5.52, 5.62, 64), new T.MeshBasicMaterial({ color: 0x0284c7 }));
+    rim.rotation.x = -Math.PI / 2; rim.position.y = 0.01; scene.add(rim);
 
     const M = {};
     const COL = { ceramic: 0xf1f4f8, trim: 0xc2cbd6, steel: 0x7b8899, accent: 0x0ea5e9, glass: 0x7c90a6, park: 0xa9cc93, crown: 0x86b97f };
@@ -2349,33 +2356,119 @@
     }
 
     // Each vehicle, sized to fill the stand; flying craft hover above it
-    const fit = (o, fly) => {
+    const fit = (o, v) => {
       const bb = new T.Box3().setFromObject(o), size = bb.getSize(new T.Vector3());
-      const k = 7.4 / Math.max(size.x, size.z, size.y * 1.6);
+      const k = (v.wl !== undefined ? 6.6 : 7.4) / Math.max(size.x, size.z, size.y * 1.6);
       o.scale.multiplyScalar(k);
       const b2 = new T.Box3().setFromObject(o), c = b2.getCenter(new T.Vector3());
-      o.position.x -= c.x; o.position.z -= c.z; o.position.y += (fly ? 1.4 : 0.02) - b2.min.y;
+      o.position.x -= c.x; o.position.z -= c.z;
+      if (v.wl !== undefined) o.position.y = -v.wl * k;          // its own y = wl sits on the water
+      else if (v.under) o.position.y += -0.9 - c.y;              // centred under the surface
+      else o.position.y += (v.fly ? 1.4 : 0.02) - b2.min.y;
       const holder = new T.Group(); holder.add(o); holder.visible = false; scene.add(holder);
       return holder;
     };
     const take = (o) => { world.remove(o); return o; };
+    // Extra detail for the close-up (ship units): deck rails with lights, lifeboat pods, rooftop solar, a mast
+    [-1, 1].forEach((sx) => {
+      box(0.06, 0.25, 11, M.trim, sx * 5.12, 1.15, 0.3, lev);
+      for (let z = -5; z <= 5.5; z += 1.1) box(0.08, 0.06, 0.08, M.glow, sx * 5.12, 1.42, z, lev);
+      for (let z = -4; z <= 4.6; z += 1.7) {
+        const pod = shade(new T.Mesh(new T.SphereGeometry(0.22, 12, 8), M.ceramic)); pod.scale.set(1, 0.8, 2.2); pod.position.set(sx * 5.32, 0.62, z); lev.add(pod);
+        box(0.3, 0.06, 0.6, M.glass, sx * 5.32, 0.74, z, lev);
+      }
+    });
+    [-3.8, 2.6].forEach((z) => [-0.45, 0.45].forEach((dx) => { box(0.7, 0.05, 0.9, M.glass, -3.85 + dx, 2.63, z, lev).rotation.z = 0.25; }));
+    cyl(0.03, 0.03, 1.4, M.steel, -3.85, 4.45, -0.6, 5, lev);
+    // Life round the ship, in ship units: people on the decks, quadcopters, a jet on circuits, boats coming in to dock
+    function makeLevLife() {
+      const v3 = new T.Vector3(), v4 = new T.Vector3(), mt = new T.Matrix4(), qq = new T.Quaternion(), sc1 = new T.Vector3(1, 1, 1);
+      const AREAS = [[-4.9, -2.9, 4.1, 5.6], [-4.9, -2.9, 0.4, 1.3], [-4.9, -2.9, -2.6, -1.6], [4.75, 5.05, -5, 5.6], [-2, 2, 5.2, 5.9], [-1.2, 1.2, -5.3, -4.6]];
+      const COLS = [0x1e293b, 0x334155, 0xf8fafc, 0x0ea5e9, 0x64748b, 0x0369a1, 0xe2e8f0];
+      const pick = (a) => [a[0] + Math.random() * (a[1] - a[0]), a[2] + Math.random() * (a[3] - a[2])];
+      const folk = Array.from({ length: 42 }, (_, i) => { const a = AREAS[i % AREAS.length], p = pick(a); return { a, p, t: pick(a), v: 0.3 + Math.random() * 0.3, wait: Math.random() * 2 }; });
+      const pm = new T.InstancedMesh(new T.CylinderGeometry(0.045, 0.06, 0.24, 6), new T.MeshStandardMaterial({ roughness: 0.8 }), folk.length);
+      const col = new T.Color();
+      folk.forEach((f, i) => pm.setColorAt(i, col.setHex(COLS[i % COLS.length])));
+      lev.add(pm);
+      const PADS = [[1.5, -3.2], [1.5, 0.3], [-1.6, 0.3]];
+      const quads = Array.from({ length: 4 }, (_, i) => {
+        const q = makeQuad(); q.scale.setScalar(0.3); lev.add(q);
+        const from = new T.Vector3(PADS[i % 3][0], 1.3, PADS[i % 3][1]);
+        q.position.copy(from);
+        return { q, from, to: from.clone(), t: 1, hold: Math.random() * 2, dur: 3 };
+      });
+      const airPt = () => new T.Vector3((Math.random() - 0.5) * 16, 3 + Math.random() * 3, (Math.random() - 0.5) * 18);
+      const jet = makeJet(world); world.remove(jet); jet.scale.setScalar(0.5); lev.add(jet);
+      const circuit = new T.CatmullRomCurve3([[3.85, 1.35, -4], [3.85, 1.4, 0.5], [3.85, 1.8, 5], [3.9, 3.6, 9], [7, 6.5, 13], [14, 8, 7], [16, 8, -6], [10, 6.5, -15], [4.5, 4, -12], [3.85, 2.2, -7.5]].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
+      let jt = 0;
+      // Boats: two sweep drones and a tender run loops that bring each alongside to dock, pause, then head out
+      const boat = (g, pts, dock, ph) => ({ g, path: new T.CatmullRomCurve3(pts.map(([x, z]) => new T.Vector3(x, -0.12, z)), true, 'centripetal'), dock: new T.Vector3(dock[0], -0.12, dock[1]), t: ph });
+      const c1 = take(makeCat().g); c1.scale.setScalar(0.32); lev.add(c1);
+      const c2 = take(makeCat().g); c2.scale.setScalar(0.32); lev.add(c2);
+      const tender = new T.Group();
+      box(0.8, 0.4, 2, M.ceramic, 0, -0.2, 0, tender); box(0.82, 0.1, 2.02, M.accent, 0, 0.12, 0, tender); box(0.6, 0.4, 0.7, M.glass, 0, 0.2, -0.3, tender);
+      tender.scale.setScalar(0.45); lev.add(tender);
+      const boats = [
+        boat(c1, [[13, -13], [7.6, -7], [6.1, -3.5], [6.3, 2], [11, 8], [16, -2]], [6.1, -3.5], 0),
+        boat(c2, [[-13, 12], [-7.6, 6], [-6.1, 2.5], [-6.3, -3], [-11, -9], [-16, 2]], [-6.1, 2.5], 0.5),
+        boat(tender, [[0, 14], [3.5, 9.5], [2.4, 7.4], [-3, 9], [-6, 15], [3, 18]], [2.4, 7.4], 0.25)
+      ];
+      boats.forEach((b) => b.g.position.copy(b.path.getPointAt(b.t)));
+      return (dt) => {
+        const o = VEH[1].obj; o.updateMatrixWorld(true);
+        folk.forEach((f, i) => {
+          if (f.wait > 0) f.wait -= dt;
+          else {
+            const dx = f.t[0] - f.p[0], dz = f.t[1] - f.p[1], d = Math.hypot(dx, dz), st = f.v * dt;
+            if (d < st) { f.p = f.t; f.t = pick(f.a); f.wait = Math.random() * 3; }
+            else { f.p = [f.p[0] + dx / d * st, f.p[1] + dz / d * st]; }
+          }
+          mt.compose(v3.set(f.p[0], 1.27 + (f.wait > 0 ? 0 : Math.abs(Math.sin(performance.now() / 160 + i)) * 0.02), f.p[1]), qq, sc1);
+          pm.setMatrixAt(i, mt);
+        });
+        pm.instanceMatrix.needsUpdate = true;
+        quads.forEach((d) => {
+          if (d.hold > 0) { d.hold -= dt; return; }
+          d.t = Math.min(1, d.t + dt / d.dur);
+          const e = d.t * d.t * (3 - 2 * d.t);
+          d.q.position.lerpVectors(d.from, d.to, e);
+          if (d.t >= 1) {
+            d.from.copy(d.to);
+            const onPad = d.from.y < 1.5, pad = PADS[Math.floor(Math.random() * 3)];
+            d.to = onPad ? airPt() : (Math.random() < 0.5 ? new T.Vector3(pad[0], 1.3, pad[1]) : airPt());
+            d.t = 0; d.hold = onPad ? 1.5 : 0.4; d.dur = 2.5 + Math.random() * 2;
+          }
+        });
+        jt = (jt + dt * 5 / circuit.getLength()) % 1;
+        jet.position.copy(circuit.getPointAt(jt));
+        jet.lookAt(lev.localToWorld(v4.copy(circuit.getPointAt((jt + 0.01) % 1))));
+        boats.forEach((b) => {
+          const here = b.path.getPointAt(b.t), slow = here.distanceTo(b.dock) < 1.2;
+          b.t = (b.t + dt * (slow ? 0.25 : 1.6) / b.path.getLength()) % 1;
+          const p = b.path.getPointAt(b.t);
+          b.g.position.copy(p);
+          b.g.lookAt(lev.localToWorld(v4.copy(b.path.getPointAt((b.t + 0.005) % 1))));
+        });
+      };
+    }
     const VEH = [
       { id: 'angel', name: 'Angel-class glider', kind: 'Seeding glider · ~50 m', fly: true, make: () => take(makeGlider(1)),
         blurb: 'Hangs under the Stratosphere Port, drops nose-down along the tether, and is bent into level flight by its magnets. Cruises at Mach 6, releases seed canisters 1,000 m over burned land, and glides home on sunlight.',
         parts: [['Spine and nose', 'Ceramic-white composite'], ['Wings', 'Swept metamaterial solar wings for the glide home'], ['Leading edges', 'Bio-luminescent skin, pressurized before release'], ['Belly frame', 'Bio-metallic frame the tether inductors push on'], ['Intake', 'Ventral scramjet intake, lights at Mach 3'], ['Fins', 'Twin canted tail fins'], ['Pods', 'Seed canisters, released at 1,000 m'], ['Wingtips', 'Upturned winglets with lights']] },
-      { id: 'leviathan', name: 'Leviathan-class harvester', kind: 'Ocean harvester · ~660 m', make: () => lev,
+      { id: 'leviathan', name: 'Leviathan-class harvester', kind: 'Ocean harvester · ~660 m', wl: 0, make: () => lev,
         blurb: 'A trimaran twice the length of an aircraft carrier: it sweeps plastic from the gyres, forges it into drone parts, flies its own aircraft and houses a crew the size of a small town.',
         parts: [['Hulls', 'Three hulls with pointed bows, windows along each'], ['Flight deck', 'Runway markings, parked jets, control island'], ['Campus', 'Habitat blocks, a slim tower, lawns and trees'], ['Bridge', 'Glass-banded bridge with a radar mast'], ['Sails', 'Two solar sails on masts'], ['Forge', 'Onboard 3D-printing foundry and its stack'], ['Hive', 'Glowing drone pads and hangar doors'], ['Crane', 'Stern crane for the net and drones'], ['Net', 'Trailing electromagnetic sweep net']] },
       { id: 'jet', name: 'Leviathan carrier jet', kind: 'Air wing', fly: true, make: () => { const j = makeJet(world); return take(j); },
         blurb: 'Each Leviathan flies its own aircraft off the flight deck like a carrier: patrols, survey runs and transfers to the city.',
         parts: [['Fuselage', 'Ceramic body with a pointed nose'], ['Wings', 'Swept wings, blue for things that move'], ['Tails', 'Twin canted tail fins']] },
-      { id: 'sweep', name: 'Sweep drone', kind: 'Leviathan hive · surface', make: () => take(makeCat().g),
+      { id: 'sweep', name: 'Sweep drone', kind: 'Leviathan hive · surface', wl: 0.3, make: () => take(makeCat().g),
         blurb: 'A small catamaran launched from a Leviathan’s hive. It circles the gyre and pulls in microplastics with an acoustic vortex.',
         parts: [['Hulls', 'Twin pointed hulls'], ['Deck', 'Solar panel deck'], ['Mast', 'Sensor mast with a beacon'], ['Vortex', 'Acoustic vortex ring that gathers plastic']] },
-      { id: 'harvest-drone', name: 'Harvest drone', kind: 'Leviathan hive · underwater', fly: true, make: () => makeHarvestDrone(),
+      { id: 'harvest-drone', name: 'Harvest drone', kind: 'Leviathan hive · underwater', under: true, make: () => makeHarvestDrone(),
         blurb: 'Runs just under the surface round its Leviathan, herding plastic toward the net.',
         parts: [['Body', 'Torpedo hull'], ['Fins', 'Steering fin and tail planes'], ['Sensor', 'Glowing sensor eye at the nose']] },
-      { id: 'reef-drone', name: 'Reef drone', kind: 'Reef restoration', fly: true, make: () => makeReefDrone(),
+      { id: 'reef-drone', name: 'Reef drone', kind: 'Reef restoration', under: true, make: () => makeReefDrone(),
         blurb: 'Patrols bleached reef and micro-welds heat-tolerant polyps onto it; the coral it passes comes back to colour.',
         parts: [['Hull', 'Submersible hull with a viewport'], ['Fins', 'Tail fin and stabilizers'], ['Thruster', 'Ring-guarded propeller'], ['Tool', 'Micro-welding tip for the polyps']] },
       { id: 'climber', name: 'Tether climber', kind: 'Space elevator', make: () => take(makeClimber(1, 0)),
@@ -2385,7 +2478,9 @@
         blurb: 'Quadcopters that hop between rooftops across the city, some carrying parcels.',
         parts: [['Body', 'Ceramic core'], ['Rotors', 'Four rotors on crossed arms'], ['Beacon', 'Blinking beacon'], ['Parcel', 'Underslung parcel']] }
     ];
-    VEH.forEach((v) => { v.obj = fit(v.make(), v.fly); });
+    VEH.forEach((v) => { v.obj = fit(v.make(), v); });
+    const levLife = makeLevLife();
+    levLife(0);   // place everyone once, so a paused or reduced-motion view still shows them
 
     const tabs = $('#veh-tabs'), panel = $('#veh-panel');
     let cur = 0, yaw = 0.6, drag = null, last = performance.now();
@@ -2439,6 +2534,7 @@
       const dt = Math.min(Math.max((now - last) / 1000, 0), 0.05); last = now;
       if (drag === null && !paused && !reduceMQ.matches) yaw += dt * 0.25;
       VEH[cur].obj.rotation.y = yaw;
+      if (VEH[cur].id === 'leviathan' && !paused && !reduceMQ.matches) levLife(dt);
       renderer.render(scene, camera);
     })(performance.now());
   }
