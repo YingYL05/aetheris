@@ -23,14 +23,22 @@ copy and figures consistent with it. When versions or sections disagree, the new
 Mach 6+, Leviathans are 500+ m and number 64 (they are "the Whales"; the small boats in the model are sweep drones),
 Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned subs, hydrothermal vents).
 
-- `index.html`: the whole site in one complete HTML document (doctype, utf-8 charset). Three.js r128 from cdnjs is
-  the only dependency.
+- Pages (2026-10-27, user: the home page was too technical and long, move the detail and the simulation to their
+  own pages): `index.html` home (plain-language hero, four "what Aetheris does" cards, a live-model teaser),
+  `model.html` (the 3D model plus telemetry and the event log; the only page that loads Three.js r128 from cdnjs),
+  `technology.html` (systems, fleet with the to-scale strip, launch, Apex), `accord.html` (Accord and open APIs).
+  Shared `assets/site.css` and `assets/site.js`. In the script every feature checks its section exists; the whole
+  model lives in `initModel()` and runs only when `#stage` is present, exposing `goStop` and `updateLiveHook`.
+  Off the model page, `data-show` buttons go to `model.html#<stop id>` and the model opens that stop. The fleet API
+  sample and the Apex debris tally use stand-ins when there's no live model. Header nav keeps the brief's labels
+  (Fleet Tracker, Climate Telemetry, Accord Portal, Open APIs) plus Technology, with `aria-current="page"`. Each
+  page has one h1 in a compact `.page-head` (home uses the hero). Section numbers restart per page.
 - Run: `python -m http.server 4392` in this folder, then http://127.0.0.1:4392/. The user wants this project on
   localhost only (2026-10-25): don't republish it as an artifact unless asked. An old artifact copy exists at
   https://claude.ai/artifact/QagTVDZE4HUintYKJ4GHk6 (version 6, now stale).
 - Hosting (2026-10-26): private repo github.com/YingYL05/aetheris; Cloudflare Workers Builds deploys every push to
   `main` at https://aetheris.yingyuul05.workers.dev/ (the share link for the user's friends). The whole repo folder
-  is the asset directory, so `.assetsignore` keeps everything but `index.html` off the public site (it was serving
+  is the asset directory, so `.assetsignore` keeps the notes, README and `.git` off the public site (it was serving
   these notes and `.git`, whose history has the author email). Add any new non-public file to it.
 - Aesthetic (redesign 2026-10-25): Endfield idiom, but deliberately NOT like Foreman's landing (user's request; the
   earlier version felt clunky and too close). "Orbital telemetry": cool-grey page (#eceff3) with white cards (`--surface`) layered on it, one deep-navy section (telemetry, `.band.dark`, which redefines the tokens), hairline rules
