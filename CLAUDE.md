@@ -55,6 +55,13 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   `frameStop` frames each stop at 0.74 of its `ext` (overview 0.88), and the vehicles carry detail: `makeGlider`
   (ceramic spine, swept wings with glowing leading edges `M.glow`, ventral frame and intake, twin fins),
   `makeClimber`, Midway rail beams and clamps, Leviathan windows, mast and crane, finned subs.
+  Bigger operation (2026-10-26, user): `CITY` has an outer ring of districts (arcology towers, foundry with sawtooth
+  halls and stacks, harbor with gantry cranes and a Leviathan in refit at `HARBOR`, two more city islands), each
+  bridged to its nearest district; towers run taller. West of the burned island is a mainland coast (`landH`,
+  `coastAt`: beach, field patchwork, forest, ridge, small town, pier, lighthouse) in the `hills` group, which hides
+  only above y 80. Loop 1 crosses it on the way out, and the "Mainland" stop (AETH//01-H; harvesters and reef are
+  now I and J) frames the crossing. Terrain base colours are deliberately dark because the light rig washes flat
+  colour toward white.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink
