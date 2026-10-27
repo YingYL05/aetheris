@@ -1,0 +1,5 @@
+# Files Cloudflare must not serve; only index.html is public
+.git
+.gitignore
+.assetsignore
+*.md
