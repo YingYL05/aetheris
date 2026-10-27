@@ -407,6 +407,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
 /* To-scale comparisons in the fleet section: flat drawings at true relative size */
 .to-scale { margin-top: 40px; }
 .to-scale-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px; margin-bottom: 14px; }
+.to-scale-head h3 { margin: 0; font-size: 11px; font-weight: 500; }
 .to-scale-head p { margin: 0; max-width: 72ch; color: var(--muted); font-size: 15px; }
 .to-scale-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .to-scale-grid figure { margin: 0; padding: 12px; }
@@ -509,6 +510,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   html { scroll-behavior: auto; }
   .orbit .ticks, .orbit .climber { animation: none; }
 }
+@media (max-width: 360px) {
+  /* 320px reflow: the header button was 6px too wide */
+  .site-head .motion-btn { padding: 6px 6px; letter-spacing: 0.04em; }
+}
 </style>
 </head>
 <body>
@@ -522,10 +527,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       AETHERIS
     </a>
     <nav class="nav" aria-label="Sections">
-      <a href="#telemetry">Climate Telemetry</a>
       <a href="#model">Fleet Tracker</a>
-      <a href="#apis">Open APIs</a>
+      <a href="#telemetry">Climate Telemetry</a>
       <a href="#accord">Accord Portal</a>
+      <a href="#apis">Open APIs</a>
     </nav>
     <button class="motion-btn mono" id="motion" type="button" aria-pressed="false">Pause motion</button>
     <span class="ptag mono"><span class="dot" aria-hidden="true"></span>Aura online</span>
@@ -589,7 +594,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     </div>
     <div class="model">
       <div class="stage" id="stage" tabindex="0" role="region" aria-label="3D operations model" aria-describedby="model-desc">
-        <p id="model-desc" class="sr-only">An animated miniature of the whole operation: the Earth Port mega-city, the tether and its climbers, the Stratosphere Port, the L1 parasol, seeding gliders over a burned island, Leviathan harvesters and the reef. Use the left and right arrow keys, the systems list or the map pins to move between systems; the panel beside the model describes the selected one. Drag to move around the map, hold Ctrl and scroll or pinch to zoom, right-drag or Shift-drag to rotate, or use the map buttons; on the keyboard, plus and minus zoom, Q and E rotate, and 0 resets the view.</p>
+        <p id="model-desc" class="sr-only">An animated miniature of the whole operation, not to scale: the Earth Port mega-city with its anchor tower, piers, shipyard and Leviathan berths; the tether and its climbers; the Stratosphere Port and its mag-drop launches; the Apex Station and L1 parasol; seeding gliders crossing the mainland coast to a burned island; Leviathan harvesters with their aircraft; and the reef. Use the left and right arrow keys, the systems list or the map pins to move between systems; the panel beside the model describes the selected one. Drag to move around the map, hold Ctrl and scroll or pinch to zoom, right-drag or Shift-drag to rotate, or use the map buttons; on the keyboard, plus and minus zoom, Q and E rotate, and 0 resets the view.</p>
         <div id="fallback" hidden>The 3D model couldn't load. The system list below still opens each system's specs.</div>
         <div class="pins" id="pins"></div>
         <div class="mapctl" role="group" aria-label="Map view">
@@ -728,7 +733,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     </div>
     <div class="to-scale">
       <div class="to-scale-head">
-        <span class="mono kicker">To scale</span>
+        <h3 class="mono kicker">To scale</h3>
         <p>The model above shrinks distances and stretches heights so everything stays readable. These are the real sizes, side by side.</p>
       </div>
       <div class="to-scale-grid">
@@ -1062,7 +1067,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
         AETHERIS
       </a>
       <nav class="foot-nav" aria-label="Footer">
-        <a href="#telemetry">Telemetry</a><a href="#model">Fleet tracker</a><a href="#fleet">Fleet profiles</a><a href="#launch">Launch sequence</a><a href="#apex">Apex Station</a><a href="#accord">Accord</a><a href="#apis">Open APIs</a>
+        <a href="#model">Fleet tracker</a><a href="#telemetry">Telemetry</a><a href="#systems">Systems</a><a href="#fleet">Fleet profiles</a><a href="#launch">Launch sequence</a><a href="#apex">Apex Station</a><a href="#accord">Accord</a><a href="#apis">Open APIs</a>
       </nav>
     </div>
     <div class="meta">
@@ -1118,10 +1123,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'A mega-city anchored in the equatorial Pacific feeds a tether to orbit, a stratospheric launch port, a seeding fleet and an ocean cleanup fleet. Pick a system to fly to it.',
       specs: [['Anchor', 'Earth Port mega-city, international waters'], ['Fleets', '48 Angel seeders · 64 Leviathans'], ['Status', 'Operational']],
       live: () => ['Seeders airborne', `${sim.airborne} of 8 shown`] },
-    { id: 'port', short: 'Earth Port', focus: [P.x + 32, 3, P.z - 3], ext: [156, 100], pin: [P.x + 9.6, 9.6, P.z + 11.2],
+    { id: 'port', short: 'Earth Port', focus: [P.x + 32, 3, P.z - 3], ext: [156, 100], pin: [P.x - 26, 12, P.z + 8],
       code: 'AETH//01-A', title: 'Earth Port mega-city',
       body: 'An artificial archipelago of titanium and ceramic, about the size of New York City, anchored in the calmest stretch of the equatorial Pacific. The model shows its heart: a raised hub around the tether anchor and the piers that grow out of it.',
-      specs: [['Footprint', '~780 km², artificial archipelago'], ['Foundries', 'Lower-deck printing bays: shade panels to scramjet parts'], ['Runways', 'Titanium airstrips over the ocean for glider servicing'], ['Power', 'Orbital microwave beaming, wave motion, OTEC'], ['Supply', 'Off-grid, no external fuel lines']],
+      specs: [['Footprint', '~780 km², artificial archipelago'], ['Foundries', 'Lower-deck printing bays: shade panels to scramjet parts'], ['Flight pier', 'Titanium runway and mag-lev catapult side by side'], ['Power', 'Orbital microwave beaming, wave motion, OTEC'], ['Supply', 'Off-grid, no external fuel lines']],
       live: () => ['Climbers on tether', '4'] },
     { id: 'aura', short: 'Aura Core', focus: [P.x + 17.6, 5, P.z + 10.4], ext: [46, 31], pin: [P.x + 17.6, 8.8, P.z + 10.4],
       code: 'AETH//01-B', title: 'Aura Core · AETHER-OS',
@@ -1220,7 +1225,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     { text: 'Flight pier · runway + catapult', at: [P.x + 90, 5, P.z - 16] },
     { text: '↑ Apex Station · GEO 36,000 km', at: [P.x + 1.5, MIDWAY_Y + 14, P.z] },
     { text: 'L1 · ~1.5M km · not to scale', at: [L1P.x, L1P.y - 6, L1P.z] }
-  ].map((t) => { const el = document.createElement('span'); el.className = 'tag mono'; el.textContent = t.text; pinsEl.appendChild(el); return { ...t, el }; });
+  ].map((t) => { const el = document.createElement('span'); el.className = 'tag mono'; el.setAttribute('aria-hidden', 'true'); el.textContent = t.text; pinsEl.appendChild(el); return { ...t, el }; });
 
   function sync() {
     [...dock.children].forEach((b, i) => b.setAttribute('aria-pressed', i === current));
@@ -1297,7 +1302,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const SYSTEMS = [
     { tab: 'Earth Port Spire', stop: 'spire', dim: '36,000 km · platform to GEO',
       title: 'A ribbon to orbit, anchored at sea',
-      body: 'A continuous carbon nanotube ribbon runs from the Earth Port mega-city to beyond geostationary orbit, held in tension by an asteroid counterweight. Maglev climbers ride its dual tracks on laser-beamed power and recover 99.8% of their energy.',
+      body: 'A continuous carbon nanotube ribbon runs from the anchor tower at the heart of Earth Port to beyond geostationary orbit, held in tension by an asteroid counterweight. Maglev climbers ride its dual tracks on laser-beamed power and recover 99.8% of their energy.',
       specs: [['Material', 'Crystalline carbon-boron nanotube ribbon'], ['Counterweight', 'Apex Station: captured asteroid at GEO'], ['Climbers', 'Magnetic levitation, laser power beaming'], ['Energy recovery', '99.8%'], ['Delivery cost', '$0.18/kg']] },
     { tab: 'Angel Fleet', stop: 'angels', dim: '30 km launch · 1,000 m release',
       title: 'Seeding burned land from the edge of space',
@@ -1305,7 +1310,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       specs: [['Fleet', '48 Angel-class gliders, ceramic-white composite'], ['Propulsion', 'Hydrogen fuel-cell scramjets out (Mach 6+), solar glide back'], ['Reach', 'Any point on Earth in under two hours'], ['Payload', 'Fungal spore matrices, mycorrhizae, auxin and gibberellin catalysts, native soil microbiota'], ['Flagship', 'Angel-Zero, tandem passenger craft']] },
     { tab: 'Oceanic Harvesters', stop: 'harvest', dim: 'Gyres to abyss',
       title: 'Cleaning the gyres, rebuilding the reefs',
-      body: 'Sixty-four Leviathan-class trimarans, each longer than any aircraft carrier, sweep the gyres with electromagnetic nets and forge the catch into drone parts. Their hives launch thousands of drones that clean, restore reef and map the abyss, and their upper decks are small cities for international research crews, with an air wing that flies off the deck like a carrier’s.',
+      body: 'Sixty-four Leviathan-class trimarans, each about twice the length of an aircraft carrier, sweep the gyres with electromagnetic nets and forge the catch into drone parts. Their hives launch thousands of drones that clean, restore reef and map the abyss, and their upper decks are small cities for international research crews, with an air wing that flies off the deck like a carrier’s.',
       specs: [['Fleet', '64 Leviathan-class trimarans, 500+ m'], ['Sweep', 'Electromagnetic nets, acoustic-vortex drones'], ['Reef work', 'Micro-welding heat-tolerant polyps'], ['Research', 'Moon pools, manned submersibles, hydrothermal vents']] },
     { tab: 'Aura Core AI', stop: 'aura', dim: '100 ms forecast loop',
       title: 'An intelligence that keeps its distance',

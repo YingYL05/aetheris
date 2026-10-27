@@ -41,7 +41,10 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   "+" grid, hatched text, corner brackets, hazard stripes, dashed SEC labels, dark nameplate footer, orange accents,
   Space Grotesk. Same trademark care as Foreman: no Endfield/Arknights names, logos, art or fonts.
   Don't name classes `.foot` inside sections; the footer owns it.
-- Accessibility target WCAG 2.2 AA. Passed axe-core 4.10 plus manual checks on 2026-10-25: contrast pairs measured
+- Accessibility target WCAG 2.2 AA. Re-checked 2026-10-27 after the model work: axe-core 4.10 clean on the overview,
+  Earth Port, Aura and Angel stops (only a browser-extension node flagged, not ours); 320 and 390 px reflow with no
+  sideways scroll; map controls are labelled buttons with a 2px focus ring and keys + - Q E 0; place tags are
+  aria-hidden (the cards carry the same facts); stop pins must stay 24px apart at the overview zoom (2.5.8). Passed axe-core 4.10 plus manual checks on 2026-10-25: contrast pairs measured
   (lowest text pair 4.66:1, faint labels on the button grey), keyboard (skip link, roving-focus tabs with arrow keys for systems and endpoints, arrow
   keys on the 3D stage), a header "Pause motion" toggle that freezes the 3D sim, orbit animation and telemetry
   (2.2.2), status announcements via `#sr-status`, 320px reflow, 24px targets. axe still flags the outlined section
