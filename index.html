@@ -1046,26 +1046,29 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const IC = { x: -210, z: 190 };   // burned island, out in the south-west corner off the mainland coast
   const G = { x: 200, z: -150 };   // Leviathan gyre, well out to sea
   const R0 = { x: 165, z: 195 };   // reef and Abyss mission, out to sea on the other side
-  const L1P = { x: -64, y: 150, z: -64 };
-  const APEX_Y = 172;    // Apex Station: the top of the model's tether
-  const MIDWAY_Y = 84;   // Stratosphere Port: high enough above the city for the whole mag-drop to play out
+  const L1P = { x: -64, y: 200, z: -64 };
+  const APEX_Y = 220;    // Apex Station: the top of the model's tether
+  const MIDWAY_Y = 120;   // well above the anchor tower's crown (~63) so the drop has room
+  // The Earth Port city is built in its own units and scaled up by this as one group (cityG), so ships at sea and
+  // aircraft keep sensible proportions against a city the size of New York
+  const CITY_K = 1.6;   // Stratosphere Port: high enough above the city for the whole mag-drop to play out
   const STOPS = [
-    { id: 'overview', short: 'Overview', focus: [P.x - 2, 6, P.z - 4], ext: [124, 80],
+    { id: 'overview', short: 'Overview', focus: [P.x - 3, 8, P.z - 6], ext: [190, 124],
       code: 'AETH//01', title: 'The whole operation, in miniature',
       body: 'A mega-city anchored in the equatorial Pacific feeds a tether to orbit, a stratospheric launch port, a seeding fleet and an ocean cleanup fleet. Pick a system to fly to it.',
       specs: [['Anchor', 'Earth Port mega-city, international waters'], ['Fleets', '48 Angel seeders · 64 Leviathans'], ['Status', 'Operational']],
       live: () => ['Seeders airborne', `${sim.airborne} of 8 shown`] },
-    { id: 'port', short: 'Earth Port', focus: [P.x + 20, 2, P.z - 2], ext: [100, 64], pin: [P.x + 6, 6, P.z + 7],
+    { id: 'port', short: 'Earth Port', focus: [P.x + 32, 3, P.z - 3], ext: [156, 100], pin: [P.x + 9.6, 9.6, P.z + 11.2],
       code: 'AETH//01-A', title: 'Earth Port mega-city',
       body: 'An artificial archipelago of titanium and ceramic, about the size of New York City, anchored in the calmest stretch of the equatorial Pacific. The model shows its heart: a raised hub around the tether anchor and the piers that grow out of it.',
       specs: [['Footprint', '~780 km², artificial archipelago'], ['Foundries', 'Lower-deck printing bays: shade panels to scramjet parts'], ['Runways', 'Titanium airstrips over the ocean for glider servicing'], ['Power', 'Orbital microwave beaming, wave motion, OTEC'], ['Supply', 'Off-grid, no external fuel lines']],
       live: () => ['Climbers on tether', '4'] },
-    { id: 'aura', short: 'Aura Core', focus: [P.x + 11, 3, P.z + 6.5], ext: [30, 20], pin: [P.x + 11, 5.5, P.z + 6.5],
+    { id: 'aura', short: 'Aura Core', focus: [P.x + 17.6, 5, P.z + 10.4], ext: [46, 31], pin: [P.x + 17.6, 8.8, P.z + 10.4],
       code: 'AETH//01-B', title: 'Aura Core · AETHER-OS',
       body: 'The intelligence that runs the system. It forecasts planetary weather, tilts the L1 shade, dispatches seeders and guards the platform without lethal force.',
       specs: [['Forecasting', '14,000 satellite vectors, 100 ms loop'], ['Defense', 'RF jamming, ECM, acoustic water barriers'], ['Persona', 'Modeled on the founder’s late partner'], ['API', 'Open access, zero cost']],
       live: () => ['Forecast cycle', fmt(sim.forecast)] },
-    { id: 'spire', short: 'Spire', focus: [P.x, MIDWAY_Y / 2 + 4, P.z], ext: [56, 104], pin: [P.x + 1.5, MIDWAY_Y * 0.7, P.z],
+    { id: 'spire', short: 'Spire', focus: [P.x, MIDWAY_Y / 2 + 4, P.z], ext: [70, 146], pin: [P.x + 1.5, MIDWAY_Y * 0.7, P.z],
       code: 'AETH//01-C', title: 'The Spire tether',
       body: 'A carbon nanotube ribbon from the anchor tower at the heart of the city to geostationary orbit, held taut by the Apex Station’s asteroid counterweight. Maglev climbers ride it on laser-beamed power.',
       specs: [['Length', '36,000 km to GEO'], ['Tracks', 'Dual ascender tracks, fiber-optic telemetry core'], ['Throughput', 'Thousands of metric tons per week'], ['Cost', '$0.18/kg to orbit']],
@@ -1095,7 +1098,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'Seeding routes cross the mainland at cruise altitude, over coastal towns, farmland and the ridge behind them, then swing back out to sea and drop to 1,000 m over the burn scar. All they leave behind is a water-vapor trail.',
       specs: [['Cruise', 'Mach 6 in the upper stratosphere, above weather and air traffic'], ['Trail', 'Water vapor only'], ['Map', 'Coast and ridge shown, not to scale']],
       live: () => ['Seeders airborne', `${sim.airborne} of 8 shown`] },
-    { id: 'harvest', short: 'Harvesters', focus: [G.x, 0, G.z], ext: [34, 23], pin: [G.x, 3, G.z],
+    { id: 'harvest', short: 'Harvesters', focus: [G.x, 0, G.z], ext: [54, 37], pin: [G.x, 3, G.z],
       code: 'AETH//01-I', title: 'Leviathan-class harvesters',
       body: 'A Leviathan sweeps the gyre with an electromagnetic net and forges the catch into drone parts and coral-seed scaffolds. Sweep drones from its hive vacuum microplastics with acoustic vortexes. Each one is a small city at sea, with its own air wing.',
       specs: [['Fleet', '64 Leviathan-class trimarans, 500+ m'], ['Air wing', 'Aircraft flown off its own deck, like a carrier'], ['Campus', 'Homes, labs and gardens for a crew the size of a small town'], ['Net', 'Kilometer-wide sweep: macro-plastics, ghost nets, chemical pollutants'], ['Forge', 'Onboard 3D-printing foundries'], ['Hive', 'Thousands of drones: launch, recharge, data offload']],
@@ -1150,11 +1153,11 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   });
   const TAGS = [
     { text: '30 km · Midway', at: [P.x + 13, MIDWAY_Y * 0.72, P.z] },
-    { text: 'Wave farm · power', at: [P.x + 54, 1.5, P.z + 24] },
-    { text: 'Foundry pier', at: [P.x - 20, 14, P.z - 35] },
-    { text: 'Shipyard · Leviathan refit', at: [P.x + 20, 12, P.z - 36] },
-    { text: 'Leviathan berths', at: [P.x, 7, P.z - 46] },
-    { text: 'Flight pier · runway + catapult', at: [P.x + 56, 3, P.z - 10] },
+    { text: 'Wave farm · power', at: [P.x + 86, 2.4, P.z + 38] },
+    { text: 'Foundry pier', at: [P.x - 32, 22, P.z - 56] },
+    { text: 'Shipyard · Leviathan refit', at: [P.x + 32, 19, P.z - 58] },
+    { text: 'Leviathan berths', at: [P.x, 11, P.z - 74] },
+    { text: 'Flight pier · runway + catapult', at: [P.x + 90, 5, P.z - 16] },
     { text: '↑ Apex Station · GEO 36,000 km', at: [P.x + 1.5, MIDWAY_Y + 14, P.z] },
     { text: 'L1 · ~1.5M km · not to scale', at: [L1P.x, L1P.y - 6, L1P.z] }
   ].map((t) => { const el = document.createElement('span'); el.className = 'tag mono'; el.textContent = t.text; pinsEl.appendChild(el); return { ...t, el }; });
@@ -1434,11 +1437,17 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const world = new T.Group();
   scene.add(world);
   const shade = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
-  function box(w, h, d, mat, x, y, z, parent = world) {
+  // Where box/cyl/tower/trees go by default: the world, or the scaled city group while the city is being built
+  const cityG = new T.Group();
+  cityG.scale.setScalar(CITY_K);
+  world.add(cityG);
+  let home = world;
+  const ck = (x, y, z) => [x * CITY_K, y * CITY_K, z * CITY_K];   // a city-unit point in world units
+  function box(w, h, d, mat, x, y, z, parent = home) {
     const m = shade(new T.Mesh(new T.BoxGeometry(w, h, d), mat));
     m.position.set(x, y + h / 2, z); parent.add(m); return m;
   }
-  function cyl(rt, rb, h, mat, x, y, z, seg = 20, parent = world) {
+  function cyl(rt, rb, h, mat, x, y, z, seg = 20, parent = home) {
     const m = shade(new T.Mesh(new T.CylinderGeometry(rt, rb, h, seg), mat));
     m.position.set(x, y + h / 2, z); parent.add(m); return m;
   }
@@ -1529,6 +1538,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     box(7, 0.25, 1.2, M.trim, 4.5, -gy + 0.35, 0.8, camp);
   }
 
+  home = cityG;
   // ----- Earth Port Anchor -----
   const DECK = 2.4;
   cyl(8.6, 8.6, 1.2, M.trim, P.x, -5.2, P.z, 6).rotation.y = Math.PI / 6;
@@ -1554,7 +1564,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   stripeTex.wrapS = stripeTex.wrapT = T.RepeatWrapping; stripeTex.magFilter = T.NearestFilter;
   M.bands = new T.MeshStandardMaterial({ alphaMap: stripeTex, alphaTest: 0.5, roughness: 0.3 });
   // A glass tower: ceramic shaft, banded glazing as one mesh (the stripes come from the alpha map), roof cap, plant, mast
-  function tower(x, z, w, h, base, parent = world) {
+  function tower(x, z, w, h, base, parent = home) {
     box(w, h, w, M.ceramic, x, base, z, parent);
     const gh = h - 1.2, g = new T.BoxGeometry(w + 0.08, gh, w + 0.08), uv = g.attributes.uv;
     for (let k = 0; k < uv.count; k++) uv.setY(k, uv.getY(k) * gh / 1.6);
@@ -1582,7 +1592,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     if (deg < 80 || deg > 280) {
       // East half: terminals and parks, low under the landing glider's climb-out
       if (k % 2) { cyl(3.2, 3.2, 0.08, M.park, x, HUB_TOP, z, 20); for (let t = 0; t < 7; t++) { const ta = rand() * 6.28, tr = rand() * 2.4; parkTrees.push([x + Math.cos(ta) * tr, HUB_TOP + 0.05, z + Math.sin(ta) * tr, 0.55 + rand() * 0.4]); } }
-      else lowRise(x, z, 3.6, 2.8, 2 + rand() * 1.6, HUB_TOP, world);
+      else lowRise(x, z, 3.6, 2.8, 2 + rand() * 1.6, HUB_TOP, home);
       continue;
     }
     tower(x, z, 3 + rand() * 1.2, 12 + rand() * 12, HUB_TOP);
@@ -1598,7 +1608,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     cyl(rg, rg, 0.8, M.glass, P.x, ty + h * 0.58, P.z, 24);
     for (let k = 0; k < 6; k++) {
       const a = (k + 0.5) * Math.PI / 3, rib = new T.Group();
-      rib.position.set(P.x, ty, P.z); rib.rotation.y = -a; world.add(rib);
+      rib.position.set(P.x, ty, P.z); rib.rotation.y = -a; home.add(rib);
       box(0.4, h, 0.5, M.trim, (rb + rt) / 2 + 0.1, 0, 0, rib).rotation.z = Math.atan2(rb - rt, h);
     }
     ty += h;
@@ -1609,8 +1619,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     }
   });
   const ANCHOR_TOP = ty;   // the tether and the climbers start from the crown
+  const ANCHOR_W = ANCHOR_TOP * CITY_K;   // the crown's height in world units
   const crown = new T.Mesh(new T.TorusGeometry(2.1, 0.4, 10, 32), M.trim);
-  crown.rotation.x = Math.PI / 2; crown.position.set(P.x, ANCHOR_TOP + 0.5, P.z); shade(crown); world.add(crown);
+  crown.rotation.x = Math.PI / 2; crown.position.set(P.x, ANCHOR_TOP + 0.5, P.z); shade(crown); home.add(crown);
   for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; box(0.3, 3.4, 1.4, M.ceramic, P.x + Math.cos(a) * 1.3, ANCHOR_TOP, P.z + Math.sin(a) * 1.3).rotation.y = -a; }
   cyl(1.7, 1.7, 0.25, M.glow, P.x, ANCHOR_TOP + 1.2, P.z, 24);
   const emitter = cyl(0.4, 0.6, 1.2, M.steel, P.x + 2.6, ANCHOR_TOP, P.z - 1.2, 10);
@@ -1619,18 +1630,18 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   butGeo.translate(0, 0, -0.7);
   for (let k = 0; k < 6; k++) {
     const a = k * Math.PI / 3, but = shade(new T.Mesh(butGeo, [M.ceramic, M.trim]));
-    but.position.set(P.x, 0, P.z); but.rotation.y = -a; world.add(but);
+    but.position.set(P.x, 0, P.z); but.rotation.y = -a; home.add(but);
     [[8, DECK + 9.9], [11.5, DECK + 6.7], [15, HUB_TOP + 3.4], [19, HUB_TOP + 1.6]].forEach(([u, y]) => box(0.3, 0.14, 1.5, M.glow, P.x + Math.cos(a) * u, y, P.z + Math.sin(a) * u).rotation.y = -a);
   }
   // Aura Core moves out onto the hub, between the flight and rectenna piers
   const AURA = { x: P.x + Math.cos(Math.PI / 6) * 13, z: P.z + Math.sin(Math.PI / 6) * 13 };
   const aura = new T.Mesh(new T.SphereGeometry(2.2, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass);
-  aura.position.set(AURA.x, HUB_TOP, AURA.z); shade(aura); world.add(aura);
+  aura.position.set(AURA.x, HUB_TOP, AURA.z); shade(aura); home.add(aura);
   const auraRing = new T.Mesh(new T.TorusGeometry(2.3, 0.12, 8, 32), M.accent);
-  auraRing.rotation.x = Math.PI / 2; auraRing.position.set(AURA.x, HUB_TOP + 0.1, AURA.z); world.add(auraRing);
+  auraRing.rotation.x = Math.PI / 2; auraRing.position.set(AURA.x, HUB_TOP + 0.1, AURA.z); home.add(auraRing);
   // Hub ring line for the city's maglev trains, running through the buttress feet
   const ringRail = new T.Mesh(new T.TorusGeometry(22.2, 0.14, 6, 96), M.trim);
-  ringRail.rotation.x = Math.PI / 2; ringRail.position.set(P.x, HUB_TOP + 0.05, P.z); world.add(ringRail);
+  ringRail.rotation.x = Math.PI / 2; ringRail.position.set(P.x, HUB_TOP + 0.05, P.z); home.add(ringRail);
   // Piers: six identical decks 60 degrees apart, a wing either side, so the hull reads as one symmetric base.
   // Each carries a district: flight (both runways), rectenna, residential, arcology, foundry, enclosed shipyard.
   const PIER_L = 60, PIER_W = 18, PIER_WING = 6;
@@ -1643,7 +1654,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const ang = a * Math.PI / 180, ux = Math.cos(ang), uz = Math.sin(ang);
     const toWorld = (u, v) => [P.x + ux * u - uz * v, P.z + uz * u + ux * v];   // pier frame: u out along it, v across
     const grp = new T.Group();
-    grp.position.set(P.x, 0, P.z); grp.rotation.y = -ang; world.add(grp);
+    grp.position.set(P.x, 0, P.z); grp.rotation.y = -ang; home.add(grp);
     const w2 = w / 2;
     // The shipyard's basin runs out through a square tip as a channel to the sea
     const BASIN = [34, 52, 3.4];   // sized to two Leviathans nose to tail
@@ -1783,7 +1794,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const CRANES = [[240, 39.5, 13.2, [-1, 0], [0, 1]], [240, 43.5, 13.2, [1, 0], [0, 1]], [300, 53, -7.4, [1, 0], [0, -1]]];
   const dockCranes = CRANES.map(([deg, u, v, pick, drop], i) => {
     const h = 6, R = 4, [x, z] = pierAt(deg, u, v), base = new T.Group();
-    base.position.set(x, ARM_TOP + h, z); world.add(base);
+    base.position.set(x, ARM_TOP + h, z); home.add(base);
     box(0.6, h, 0.6, M.ceramic, 0, -h, 0, base);
     box(1, 0.7, 1, M.trim, 0, -0.35, 0, base);
     const jib = new T.Group(); base.add(jib);
@@ -1801,7 +1812,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   });
 
     // Scenery trees (city parks and distant islands): lollipop crowns on thin trunks
-  function plantTrees(list, parent = world) {
+  function plantTrees(list, parent = home) {
     const crowns = new T.InstancedMesh(new T.SphereGeometry(1, 10, 8), M.crown, list.length);
     const trunks = new T.InstancedMesh(new T.CylinderGeometry(0.1, 0.12, 1, 6), M.trim, list.length);
     crowns.castShadow = true;
@@ -1812,6 +1823,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     parent.add(crowns, trunks);
   }
   plantTrees(parkTrees);
+  home = world;
   // Distant islets: small green islands with beaches, scattered far out so the ocean has depth
   const hillTrees = [];
   const hills = new T.Group();
@@ -1889,6 +1901,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   box(9, 0.3, 1.2, M.trim, coastAt(156) + 3.5, 0.2, 156, hills);
   cyl(0.45, 0.65, 4.5, M.ceramic, coastAt(176) - 1.2, landH(coastAt(176) - 1.2, 176) - 0.2, 176, 10, hills);
   cyl(0.55, 0.55, 0.6, M.glow, coastAt(176) - 1.2, landH(coastAt(176) - 1.2, 176) + 4.3, 176, 10, hills);
+  home = cityG;
   // Wave farm off the south island: four strings of articulated floats (wave-motion generators) with power
   // joints and mooring buoys, cabled to a collector platform and on to the city grid
   const floats = [];
@@ -1905,7 +1918,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       const x = WF.x + 1.6 + k * PITCH;
       const f = shade(new T.Mesh(new T.CylinderGeometry(0.5, 0.5, 1.8, 12), M.accent));
       f.rotation.z = Math.PI / 2; f.position.set(x, 0.15, z); f.userData.ph = k * 0.9 + row * 0.6;
-      world.add(f); floats.push(f);
+      home.add(f); floats.push(f);
       if (k) cyl(0.34, 0.34, 0.5, M.steel, x - PITCH / 2, -0.1, z, 10).rotation.z = Math.PI / 2;
     }
     [WF.x, stringEnd].forEach((x) => {
@@ -1924,7 +1937,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   cable(CX - 1.8, CZ, P.x + 35, CZ);
 
   // ----- City life: maglev trains round the hub, trams on the piers, ferries in the bays, drones overhead -----
-  function makeCars(n, parent = world) {
+  function makeCars(n, parent = home) {
     return Array.from({ length: n }, () => {
       const c = new T.Group();
       box(1.5, 0.55, 0.75, M.accent, 0, 0, 0, c);
@@ -1942,7 +1955,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     box(1, 0.6, 1.4, M.glass, 0, 0.3, -0.2, g);
     const wake = new T.Mesh(new T.PlaneGeometry(1.2, 4), M.wake);
     wake.rotation.x = -Math.PI / 2; wake.position.set(0, 0.03, -3.4); g.add(wake);
-    world.add(g);
+    home.add(g);
     return { g, a: deg * Math.PI / 180, ph: k * 2.1 };
   });
   // Quadcopter drones: they hop between waypoints over the city, hover a moment at each, and some carry a parcel
@@ -1960,17 +1973,18 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     });
     const light = box(0.14, 0.08, 0.14, M.glow, 0, 0.1, 0, m);
     if (k % 3 === 0) box(0.4, 0.34, 0.4, M.trim, 0, -0.62, 0, m);   // parcel
-    m.scale.setScalar(0.65);   // small beside the towers
+    m.scale.setScalar(0.42);   // small beside the towers (the city group scales them up)
     m.rotation.order = 'YXZ';   // yaw toward the next stop, then pitch
-    world.add(m);
+    home.add(m);
     const from = droneWaypoint();
     m.position.copy(from);
     return { m, rotors, light, from, to: droneWaypoint(), t: rand(), hold: 0, dur: 4 + rand() * 4 };
   });
 
+  home = world;
   // ----- Spire tether + climbers + beam -----
   const TOPY = APEX_Y - 2;   // the tether ends at the Apex Station
-  cyl(0.22, 0.22, TOPY - ANCHOR_TOP, M.tether, P.x, ANCHOR_TOP, P.z, 8).castShadow = true;
+  cyl(0.22, 0.22, TOPY - ANCHOR_W, M.tether, P.x, ANCHOR_W, P.z, 8).castShadow = true;
   function makeClimber(ox, oz) {
     const g = new T.Group();
     box(1.4, 2.4, 1.4, M.accent, 0, -1.2, 0, g);
@@ -1984,7 +1998,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   }
   const climbers = [0, 1, 2, 3].map((k) => {
     const off = k % 2 === 0 ? [1.05, 0] : [0, -1.05];
-    return { m: makeClimber(...off), y: ANCHOR_TOP + 2 + k * (TOPY - ANCHOR_TOP - 8) / 4, up: k % 2 === 0, off };
+    return { m: makeClimber(...off), y: ANCHOR_W + 2 + k * (TOPY - ANCHOR_W - 8) / 4, up: k % 2 === 0, off };
   });
   const beam = new T.Mesh(new T.CylinderGeometry(0.12, 0.12, 1, 6, 1, true), M.beam);
   world.add(beam);
@@ -2115,7 +2129,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); m.rotation.y = -Math.atan2(z1 - z0, x1 - x0); parent.add(m);
   }
   const podGeo = new T.CylinderGeometry(0.13, 0.13, 1, 8); podGeo.rotateX(Math.PI / 2);
-  function makeGlider(scale = 1) {
+  function makeGlider(scale = 0.7) {
     const g = new T.Group();
     g.add(shade(new T.Mesh(wingGeo, M.accent)));
     const spine = shade(new T.Mesh(spineGeo, M.ceramic)); spine.position.set(0, 0.12, 0.05); g.add(spine);
@@ -2148,7 +2162,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     route([
       ...DROP.map(([d, y]) => atLane(0, d, y)),
       [IC.x + 44, 42, IC.z - 12], [IC.x + 18, 16, IC.z - 14], [IC.x + 10, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z - 4], [IC.x - 6, 7, IC.z + 12],
-      [IC.x + 14, 16, IC.z + 18], [-40, SY * 0.6, 34], atLane(0, HANG_R + 16, SY - 4), atLane(0, HANG_R + 3, SY - 1.4)
+      [IC.x + 14, 16, IC.z + 18], [-40, SY * 0.72, 34], atLane(0, HANG_R + 16, SY - 4), atLane(0, HANG_R + 3, SY - 1.4)
     ]),
     // Out over the mainland: across the coast, the farmland and the ridge, then back out to sea to seed
     route([
@@ -2212,24 +2226,24 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const t = (k / 3 + li * 0.16) % 1;
     gliders.push({ g: makeGlider(), trail: makeTrail(), curve, t, out: t < 0.45, id: `ANGEL-${String(li * 3 + k + 1).padStart(2, '0')}`, seeding: false, acc: 0, lane: li, cruise: 48 });
   }));
-  const parked = makeGlider(0.9);
-  parked.position.set(P.x + 36, ARM_TOP + 0.45, RZ + 7.7);
+  const parked = makeGlider(0.65 * CITY_K);
+  parked.position.set(...ck(36, ARM_TOP + 0.45, RZ + 7.7));
   parked.rotation.y = -Math.PI / 2;
   // ANGEL-07 takes the second recovery option: a horizontal landing on the mega-city runway
   const landCurve = route([
     ...DROP.map(([d, y]) => atLane(2, d, y)),
     [IC.x + 44, 42, IC.z - 10], [IC.x + 18, 16, IC.z - 12], [IC.x + 12, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z],
-    [IC.x - 4, 7, IC.z + 14], [-110, 30, 130], [-30, 18, 70], [40, 8, 40], [84, 5, RZ + 2], [P.x + 62, ARM_TOP + 0.6, RZ],
-    [P.x + 42, ARM_TOP + 0.6, RZ], [P.x + 28, ARM_TOP + 0.6, RZ], [P.x + 16, 10, RZ - 6], [P.x + 22, 30, P.z - 30], [P.x + 6, 56, P.z - 22],
+    [IC.x - 4, 7, IC.z + 14], [-110, 30, 130], [-40, 30, 112], ck(70, 10, 62), ck(96, 6, 30), ck(84, 4, RZ + 2), ck(62, ARM_TOP + 0.6, RZ),
+    ck(42, ARM_TOP + 0.6, RZ), ck(28, ARM_TOP + 0.6, RZ), ck(16, 10, RZ - 6), ck(22, 30, -30), [P.x + 6, 62, P.z - 22],
     atLane(2, HANG_R + 16, SY - 4), atLane(2, HANG_R + 3, SY - 1.4)
   ]);
   gliders.push({ g: makeGlider(), trail: makeTrail(), curve: landCurve, t: 0.35, out: false, id: 'ANGEL-07', seeding: false, acc: 0, land: true, landed: false, lane: 2, cruise: 48 });
   // ANGEL-08 uses the secondary method: the mag-lev catapult on the east runway, then a steep climb
   const catCurve = new T.CatmullRomCurve3([
-    [P.x + 27, 2.2, CAT_Z], [P.x + 42, 2.2, CAT_Z], [P.x + 58, 2.5, CAT_Z], [P.x + 68, 9, CAT_Z - 0.5], [P.x + 74, 22, CAT_Z - 4],
-    [P.x + 66, SY - 5, P.z - 30], [P.x + 30, SY - 5, P.z - 36], [-30, SY - 6, -10], [-50, 44, 4], [IC.x + 22, 18, IC.z - 20], [IC.x + 10, 7, IC.z - 8],
-    [IC.x - 10, 6.5, IC.z + 2], [IC.x - 2, 7, IC.z + 14], [IC.x + 18, 16, IC.z + 18], [-20, 22, 46], [40, 20, 36], [96, 12, 4],
-    [P.x + 80, 5, CAT_Z], [P.x + 60, 2.4, CAT_Z], [P.x + 44, 2.2, CAT_Z], [P.x + 29, 2.2, CAT_Z - 0.3]
+    ck(27, 2.2, CAT_Z), ck(42, 2.2, CAT_Z), ck(58, 2.5, CAT_Z), ck(68, 9, CAT_Z - 0.5), ck(74, 22, CAT_Z - 4),
+    [P.x + 66, SY - 5, P.z - 30], [P.x + 30, SY - 5, P.z - 36], [-30, SY - 6, -10], [-50, 60, 4], [IC.x + 22, 18, IC.z - 20], [IC.x + 10, 7, IC.z - 8],
+    [IC.x - 10, 6.5, IC.z + 2], [IC.x - 2, 7, IC.z + 14], [IC.x + 18, 16, IC.z + 18], [-20, 56, 46], [40, 20, 36], ck(96, 8, 4),
+    ck(80, 5, CAT_Z), ck(60, 2.4, CAT_Z), ck(44, 2.2, CAT_Z), ck(29, 2.2, CAT_Z - 0.3)
   ].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
   gliders.push({ g: makeGlider(), trail: makeTrail(), curve: catCurve, t: 0.62, out: false, id: 'ANGEL-08', seeding: false, acc: 0, cat: true, launching: false, cruise: 48 });
   // Route markers: where the pitch-over ends, the bend starts, the push-out fires and its burst fades. Scramjets
@@ -2247,7 +2261,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // Angels waiting on Midway's rail mounts, nose out, each under its own mount
   [1.9, 3.1, 4.3].forEach((rot) => {
     const dx = toIsle.x * Math.cos(rot) - toIsle.y * Math.sin(rot), dz = toIsle.x * Math.sin(rot) + toIsle.y * Math.cos(rot);
-    const hang = makeGlider(0.9);
+    const hang = makeGlider(0.65);
     hang.position.set(P.x + dx * HANG_R, SY - 1.6, P.z + dz * HANG_R);
     hang.lookAt(P.x + dx * 12, SY - 1.6, P.z + dz * 12);
     box(4.6, 0.3, 0.5, M.trim, P.x + dx * HANG_R, SY - 0.45, P.z + dz * HANG_R).rotation.y = -Math.atan2(dz, dx);
@@ -2272,7 +2286,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
 
   // ----- Harvesters, gyre plastic -----
   const gyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
-    const a = k / 12 * Math.PI * 2, r = 5.4 + Math.sin(a * 2) * 1.1;
+    const a = k / 12 * Math.PI * 2, r = 8.6 + Math.sin(a * 2) * 1.8;
     return new T.Vector3(G.x + Math.cos(a) * r, 0.1, G.z + Math.sin(a) * r * 0.8);
   }), true);
   // A hull with a pointed bow toward +z: width, length, height; sits from y 0 to y height
@@ -2293,7 +2307,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     box(0.16, 0.12, 0.16, M.glow, 0, 1.9, 0.8, g);
     const v = new T.Mesh(new T.RingGeometry(1.6, 2, 32), M.vortex);
     v.rotation.x = -Math.PI / 2; v.position.y = -0.3; g.add(v);
-    g.scale.setScalar(0.45);
+    g.scale.setScalar(0.72);
     world.add(g); return { g, v };
   }
   const cats = [0, 1, 2].map((k) => ({ ...makeCat(), t: k / 3 }));
@@ -2301,7 +2315,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // Leviathan-class mothership: trimaran with sanctuary decks, forge, stern drydock, solar sails and a trailing net
   const outerGyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
     const a = k / 12 * Math.PI * 2;
-    return new T.Vector3(G.x + Math.cos(a) * 7.6, 0.1, G.z + Math.sin(a) * 6.2);
+    return new T.Vector3(G.x + Math.cos(a) * 12.2, 0.1, G.z + Math.sin(a) * 9.9);
   }), true);
   const lev = new T.Group();
   hull(2.6, 15, 1.3, M.accent, 0, -0.5, 0, lev);
@@ -2324,7 +2338,8 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     [-0.14, 0.14].forEach((x) => box(0.04, 0.35, 0.3, M.ceramic, x, 0.2, -0.6, j).rotation.z = x * 2);
     parent.add(j); return j;
   }
-  [[4.5, -3.6], [4.5, -2.1], [3.3, 4.6]].forEach(([x, z]) => { const j = makeJet(lev); j.position.set(x, 1.19, z); j.rotation.y = 0.6; });
+  // A carrier jet is about a sixteenth of its ship's length
+  [[4.5, -3.6], [4.5, -2.6], [3.4, 4.6], [3.4, 3.8]].forEach(([x, z]) => { const j = makeJet(lev); j.scale.setScalar(0.5); j.position.set(x, 1.19, z); j.rotation.y = 0.6; });
   // Port: the campus. Habitat blocks with lit windows and green roofs, a slim tower, gardens and trees.
   [-3.8, 2.6].forEach((z) => {
     box(1.8, 1.4, 2.2, M.ceramic, -3.85, 1.15, z, lev);
@@ -2373,7 +2388,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   lev.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(netPts), lineMat));
   // A Leviathan is about twice a carrier (~660 m) against a city ~28 km across, so it sits at roughly a twentieth of
   // the city's width here (towers are exaggerated, ships less so). Every clone below inherits this scale.
-  const LEV_S = 0.45;
+  const LEV_BASE = 0.45, LEV_S = LEV_BASE * CITY_K;   // at sea; ships inside the scaled city use LEV_BASE
   lev.scale.setScalar(LEV_S);
   world.add(lev);
   const levState = { t: 0.55 };
@@ -2385,7 +2400,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const CIRCUIT = new T.CatmullRomCurve3([[3.85, 1.35, -4], [3.85, 1.4, 0.5], [3.85, 1.8, 5], [3.9, 4.5, 10], [8, 9, 18], [20, 12, 10],
     [24, 12, -8], [14, 9, -22], [5, 5, -16], [3.85, 2.2, -8.5]].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
   const carriers = [lev, lev2].map((ship, i) => {
-    const jet = makeJet(world); jet.scale.setScalar(LEV_S);
+    const jet = makeJet(world); jet.scale.setScalar(LEV_S * 0.5);
     const tenders = [0, 1].map((k) => {
       const g = new T.Group();
       box(0.8, 0.4, 2, M.ceramic, 0, -0.2, 0, g);
@@ -2401,11 +2416,12 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   if (HARBOR) {
     const refit = lev.clone();
     refit.children.filter((c) => c.isLineSegments).forEach((c) => refit.remove(c));
+    refit.scale.setScalar(LEV_BASE);
     refit.position.set(HARBOR.x - HARBOR.ux * 4.1, 0.05, HARBOR.z - HARBOR.uz * 4.1); refit.rotation.y = HARBOR.yaw;
-    world.add(refit);
+    cityG.add(refit);
     const refit2 = refit.clone();
     refit2.position.set(HARBOR.x + HARBOR.ux * 4.1, 0.05, HARBOR.z + HARBOR.uz * 4.1);
-    world.add(refit2);
+    cityG.add(refit2);
     HARBOR.refit = refit;
   }
   // Leviathans at their berths, one in scaffolding for work, and smaller ships moored round the harbor
@@ -2413,8 +2429,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const berth = lev.clone();
     berth.children.filter((c) => c.isLineSegments).forEach((c) => berth.remove(c));
     const [x, z] = pierAt(deg, u, v);
+    berth.scale.setScalar(LEV_BASE);
     berth.position.set(x, 0.05, z); berth.rotation.y = pierYaw(deg);
-    world.add(berth);
+    cityG.add(berth);
     if (scaffold) {
       // Built in the ship's own units, so it scales with it
       [[-5.4, -9], [5.4, -9], [-5.4, 9], [5.4, 9]].forEach(([dx, dz]) => box(0.4, 7, 0.4, M.trim, dx, 0, dz, berth));
@@ -2431,7 +2448,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     cyl(0.05, 0.05, 1.6, M.steel, 0, 1.5, -len / 2 + 1.2, 5, g);
     if (cargo) for (let k = 0; k < Math.floor(len / 2.4) - 1; k++) box(1.4, 0.7, 1.9, STK[k % 3], 0, 0.4, -len / 2 + 3 + k * 2.2, g);
     g.scale.setScalar(0.5);   // supply ships and tugs, small beside a Leviathan
-    world.add(g); return g;
+    cityG.add(g); return g;
   }
   [[240, 27, 10.4, 8, true], [300, 27, -10.4, 5, false], [240, 55, 10.4, 9, true], [300, 46, -16.3, 5, false]].forEach(([deg, u, v, len, cargo]) => {
     const [x, z] = pierAt(deg, u, v), sh = makeShip(len, cargo);
@@ -2439,22 +2456,27 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   });
     const wideGyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
     const a = k / 12 * Math.PI * 2;
-    return new T.Vector3(G.x + Math.cos(a) * 15, 0.1, G.z + Math.sin(a) * 11);
+    return new T.Vector3(G.x + Math.cos(a) * 24, 0.1, G.z + Math.sin(a) * 17.6);
   }), true);
+  {
+    // Holding station, processing its catch
+    const p0 = wideGyre.getPointAt(0.3), v0 = wideGyre.getTangentAt(0.3);
+    lev2.position.set(p0.x, 0.05, p0.z); lev2.rotation.y = Math.atan2(v0.x, v0.z);
+  }
   const drones = [0, 1, 2, 3].map((k) => {
     const m = new T.Group();
     const body = shade(new T.Mesh(new T.SphereGeometry(0.4, 12, 8), M.accent)); body.scale.set(0.8, 0.7, 2); m.add(body);
     box(0.06, 0.5, 0.4, M.ceramic, 0, -0.25, -0.7, m);
     box(0.9, 0.06, 0.35, M.ceramic, 0, -0.03, -0.7, m);
     box(0.2, 0.14, 0.08, M.glow, 0, 0.05, 0.8, m);
-    m.scale.setScalar(0.55); world.add(m); return { m, k };
+    m.scale.setScalar(0.88); world.add(m); return { m, k };
   });
   const netCenter = new T.Vector3();
   const PLASTIC = 70;
   const plasticMesh = new T.InstancedMesh(new T.BoxGeometry(0.2, 0.08, 0.2), M.inst, PLASTIC);
   world.add(plasticMesh);
   const specks = Array.from({ length: PLASTIC }, () => ({ x: 0, z: 0, on: true, back: 0 }));
-  function placeSpeck(s) { const a = Math.random() * Math.PI * 2, r = 3 + Math.random() * 5; s.x = G.x + Math.cos(a) * r; s.z = G.z + Math.sin(a) * r * 0.8; s.on = true; }
+  function placeSpeck(s) { const a = Math.random() * Math.PI * 2, r = 4.8 + Math.random() * 8; s.x = G.x + Math.cos(a) * r; s.z = G.z + Math.sin(a) * r * 0.8; s.on = true; }
   specks.forEach(placeSpeck);
   function drawSpecks() {
     specks.forEach((s, i) => {
@@ -2818,13 +2840,13 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     sim.climbUp = 0;
     climbers.forEach((c, k) => {
       c.y += (c.up ? 1 : -1) * dt * 9;
-      if (c.up && c.y > TOPY - 4) { c.y = ANCHOR_TOP + 2; log('SPIRE', `Climber C-${k + 1} handoff at GEO`); }
-      if (!c.up && c.y < ANCHOR_TOP + 2) c.y = TOPY - 4;
+      if (c.up && c.y > TOPY - 4) { c.y = ANCHOR_W + 2; log('SPIRE', `Climber C-${k + 1} handoff at GEO`); }
+      if (!c.up && c.y < ANCHOR_W + 2) c.y = TOPY - 4;
       c.m.position.set(P.x + c.off[0], c.y, P.z + c.off[1]);
       if (c.up) { sim.climbUp++; if (!beamTo || c.y < beamTo.y) beamTo = c; }
     });
     if (beamTo) {
-      const a = new T.Vector3(P.x + 2.6, ANCHOR_TOP + 1.2, P.z - 1.2), b = beamTo.m.position;
+      const a = new T.Vector3(...ck(2.6, ANCHOR_TOP + 1.2, -1.2)), b = beamTo.m.position;
       const len = a.distanceTo(b);
       beam.position.copy(a).lerp(b, 0.5);
       beam.scale.set(1, len, 1);
@@ -2838,9 +2860,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       const prevT = gl.t, cur = gl.g.position;
       const base = gl.cruise && cur.y > 14 ? gl.cruise : 24;
       let speed = base;
-      if (gl.cat && cur.y < 3.2 && cur.x > P.x + 25 && Math.abs(cur.z - CAT_Z) < 2.5) {
+      if (gl.cat && cur.y < 3.2 * CITY_K && cur.x > 25 * CITY_K && Math.abs(cur.z - CAT_Z * CITY_K) < 2.5 * CITY_K) {
         // On the catapult the sled ramps the speed up; on landing the roll-out slows it down
-        speed = gl.launching ? 5 + (cur.x - (P.x + 26)) * 1.6 : 4 + (cur.x - (P.x + 26)) * 0.8;
+        speed = gl.launching ? 5 + (cur.x / CITY_K - 26) * 2.4 : 4 + (cur.x / CITY_K - 26) * 1.2;
       } else if (!gl.cat && gl.t < gl.tPush) {
         speed = 3 + Math.max(0, SY - 1.6 - cur.y) * 2.8;   // gravity builds speed down the tether and through the bend
       } else if (!gl.cat && gl.t < gl.tBlast) {
@@ -2880,7 +2902,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       if (over && !gl.seeding) log(gl.id, 'Canister release over burn scar · 1,000 m');
       if (gl.seeding && !over) gl.out = false;
       if (gl.land) {
-        const onStrip = p.y < ARM_TOP + 1.4 && p.x > P.x + 24 && p.x < P.x + 63 && Math.abs(p.z - RZ) < 2;
+        const onStrip = p.y < (ARM_TOP + 1.4) * CITY_K && p.x > 24 * CITY_K && p.x < 63 * CITY_K && Math.abs(p.z - RZ * CITY_K) < 2 * CITY_K;
         if (onStrip && !gl.landed) log(gl.id, 'Runway landing at Earth Port · full servicing');
         gl.landed = onStrip;
       }
@@ -2904,8 +2926,8 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       if (k < 1) { f.ring.scale.setScalar(1 + k * 3); f.ring.material.opacity = 0.7 * (1 - k); }
     });
     const cg = gliders.find((g) => g.cat).g.position;
-    const onTrack = cg.y < 3.2 && cg.x > P.x + 25 && Math.abs(cg.z - CAT_Z) < 2.5 && gliders.find((g) => g.cat).launching;
-    sled.position.x = onTrack ? Math.min(cg.x, P.x + 58) : P.x + 27;
+    const onTrack = cg.y < 3.2 * CITY_K && cg.x > 25 * CITY_K && Math.abs(cg.z - CAT_Z * CITY_K) < 2.5 * CITY_K && gliders.find((g) => g.cat).launching;
+    sled.position.x = onTrack ? Math.min(cg.x / CITY_K, 58) : 27;   // the sled lives in city units
     let changed = false;
     seeds.forEach((s, i) => {
       if (!s.live) return;
@@ -2933,7 +2955,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     // Harvesters sweep the gyre
     let specksChanged = false;
     cats.forEach((c) => {
-      c.t = (c.t + dt * 1.6 / gyre.getLength()) % 1;
+      c.t = (c.t + dt * 2.6 / gyre.getLength()) % 1;
       const p = gyre.getPointAt(c.t);
       c.g.position.copy(p);
       gyre.getTangentAt(c.t, tan);
@@ -2941,22 +2963,20 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       const pulse = 1 + Math.sin(now / 300 + c.t * 20) * 0.25;
       c.v.scale.set(pulse, pulse, pulse);
       specks.forEach((s) => {
-        if (s.on && (s.x - p.x) ** 2 + (s.z - p.z) ** 2 < 1.6) {
+        if (s.on && (s.x - p.x) ** 2 + (s.z - p.z) ** 2 < 4.1) {
           s.on = false; s.back = now + 6000 + Math.random() * 8000; sim.plastic++; plastic += 0.4; specksChanged = true;
           if (sim.plastic % 15 === 0) log('SWEEP-0' + (cats.indexOf(c) + 1), `Vortex cycle complete · ${sim.plastic} captures this visit`);
         }
       });
     });
-    levState.t = (levState.t + dt * 0.8 / outerGyre.getLength()) % 1;
+    levState.t = (levState.t + dt * 1.3 / outerGyre.getLength()) % 1;
     const lp = outerGyre.getPointAt(levState.t);
     outerGyre.getTangentAt(levState.t, tan);
     lev.position.set(lp.x, 0.05 + Math.sin(now / 1400) * 0.06, lp.z);
     lev.rotation.y = Math.atan2(tan.x, tan.z);
     lev.updateMatrixWorld();
     netCenter.set(0, 0, -11).applyMatrix4(lev.matrixWorld);
-    const t2 = (levState.t * 0.55 + 0.5) % 1, lp2 = wideGyre.getPointAt(t2);
-    lev2.position.set(lp2.x, 0.05 + Math.sin(now / 1600) * 0.06, lp2.z);
-    lev2.rotation.y = Math.atan2(...(() => { const v = wideGyre.getTangentAt(t2); return [v.x, v.z]; })());
+    lev2.position.y = 0.05 + Math.sin(now / 1600) * 0.06;
     // Each harvesting Leviathan flies an aircraft round its circuit and has tenders circling it
     carriers.forEach((c) => {
       c.ship.updateMatrixWorld();
@@ -2972,15 +2992,15 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       });
     });
     specks.forEach((s) => {
-      if (s.on && (s.x - netCenter.x) ** 2 + (s.z - netCenter.z) ** 2 < 5.5) {
+      if (s.on && (s.x - netCenter.x) ** 2 + (s.z - netCenter.z) ** 2 < 14) {
         s.on = false; s.back = now + 6000 + Math.random() * 8000; sim.plastic++; plastic += 1.2; specksChanged = true;
         if (sim.plastic % 20 === 0) log('LEVIATHAN-01', 'Net haul to forge · drone parts printed');
       }
     });
     drones.forEach((d) => {
-      const a = now / 2600 + d.k * Math.PI / 2, r = 3 + Math.sin(now / 1800 + d.k) * 1.4;
+      const a = now / 2600 + d.k * Math.PI / 2, r = 4.8 + Math.sin(now / 1800 + d.k) * 2.2;
       const x = lp.x + Math.cos(a) * r, z = lp.z + Math.sin(a) * r;
-      d.m.position.set(x, -0.8 - Math.sin(now / 1800 + d.k) * 0.6, z);
+      d.m.position.set(x, -1.3 - Math.sin(now / 1800 + d.k) * 1, z);
       d.m.rotation.y = -a;
     });
     specks.forEach((s) => { if (!s.on && now > s.back) { placeSpeck(s); specksChanged = true; } });
@@ -3113,7 +3133,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const a = AZ + cam.az + (still || paused || mode ? 0 : Math.sin(now / 9000) * 0.04);
     camera.position.set(cam.target.x + Math.cos(cam.el) * Math.sin(a) * 300, cam.target.y + Math.sin(cam.el) * 300, cam.target.z + Math.cos(cam.el) * Math.cos(a) * 300);
     camera.lookAt(cam.target);
-    hills.visible = cam.target.y < 120;   // from orbit they'd sit huge and blurry behind the station
+    hills.visible = cam.target.y < 150;   // from orbit they'd sit huge and blurry behind the station
     sun.position.copy(cam.target).add(SUN_OFF);
     sun.target.position.copy(cam.target);
     sun.target.updateMatrixWorld();

@@ -116,6 +116,14 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   slim tower, lawn and trees. The two harvesting ships (`carriers`) each fly a jet round `CIRCUIT` (ship-local
   touch-and-go loop) and have two tenders circling; docked clones carry the same deck with parked aircraft. Page copy
   (harvest card, systems tab, fleet profile and its drawing) mentions the air wing and campus.
+  City scale (2026-10-27, user: aircraft were massive, make the city bigger; this supersedes earlier numbers): the
+  whole Earth Port city builds into `cityG`, scaled by `CITY_K` 1.6 (a `home` default parent switches to it while
+  the city, wave farm and city life are built, so all city numbers stay in city units; `ck()` converts a city point
+  to world units for the glider runway routes, the catapult/strip checks and the sled). Ships inside the city use
+  `LEV_BASE` 0.45 under the group; at sea `LEV_S` = 0.45 x 1.6, and the harvest sweep grows with it. Angels are
+  scale 0.7 (0.65 hanging/parked), carrier jets half size, city drones 0.42 in city units. The anchor crown is
+  `ANCHOR_W` (~63) in world units, so Midway moved to `MIDWAY_Y` 120, the Apex to `APEX_Y` 220 and L1 to y 200. The
+  second harvester (`lev2`) holds station (it used to follow the first and jumped once a lap).
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink
