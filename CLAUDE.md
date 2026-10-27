@@ -82,6 +82,13 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   terraced to `isleH` (central hill and shoulder), charred snags that fall away as tiles green, and a restoration
   camp facing the city. Seeds land via `tileAt`. All gliders cruise at 48 above y 14 so the long legs don't drag;
   the mainland route crosses the coast near the town (z ~150) and meets the island from the coast.
+  Map controls (2026-10-26, user): drag pans on the ground plane, Ctrl + scroll or pinch zooms toward the cursor,
+  right-drag / Shift-drag / two-finger twist rotates (vertical right-drag tilts), plus `.mapctl` buttons (zoom,
+  rotate 45 deg, reset) and keys + - Q E 0 via `mapAction`. Plain scroll only zooms once the map has been pressed
+  (until the pointer leaves), otherwise it scrolls the page and flashes `#map-hint`, so the full-height model never
+  traps scrolling. `cam.az/el/zoom` ease toward their goals; `basis()` rebuilds the view axes, and `frameStop`
+  frames against the goal orientation, so stops work from any turn. Zoom 0.16-10, pan clamped to +/-360; the ocean
+  is 1,800 wide and the shadow box widens when zoomed out so no edge shows.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink

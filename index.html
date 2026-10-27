@@ -156,6 +156,16 @@ h1, h2, h3 { margin: 0; font-family: var(--display); font-stretch: 115%; color: 
 .live-line b { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 500; }
 .mcard .hint { color: var(--faint); }
 
+/* Map view controls: zoom, rotate, reset, plus a hint for the scroll-to-zoom rule */
+.stage canvas { cursor: grab; }
+.stage.grabbing canvas { cursor: grabbing; }
+.mapctl { position: absolute; z-index: 3; right: 16px; bottom: 72px; display: grid; gap: 1px; background: var(--line); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); }
+.mapctl button { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; background: rgb(255 255 255 / 0.94); color: var(--ink); cursor: pointer; }
+.mapctl button:hover { background: var(--bg-2); }
+.mapctl button:focus-visible { outline-offset: -3px; }
+.mapctl svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.map-hint { position: absolute; z-index: 3; right: 64px; bottom: 72px; padding: 6px 10px; background: var(--ink); color: #fff; font-size: 11px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.map-hint.show { opacity: 1; }
 .dock { position: absolute; z-index: 3; left: 50%; bottom: 16px; transform: translateX(-50%); max-width: calc(100% - 32px); display: flex; gap: 0; overflow-x: auto; scrollbar-width: none; background: rgb(255 255 255 / 0.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); padding: 0 12px; }
 .dock::-webkit-scrollbar { display: none; }
 .dock button { position: relative; flex: none; display: flex; align-items: baseline; gap: 6px; padding: 12px 12px; border: 0; background: none; font-size: 13px; white-space: nowrap; cursor: pointer; color: var(--muted); }
@@ -569,9 +579,17 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     </div>
     <div class="model">
       <div class="stage" id="stage" tabindex="0" role="region" aria-label="3D operations model" aria-describedby="model-desc">
-        <p id="model-desc" class="sr-only">An animated miniature of the whole operation: the Earth Port mega-city, the tether and its climbers, the Stratosphere Port, the L1 parasol, seeding gliders over a burned island, Leviathan harvesters and the reef. Use the left and right arrow keys, the systems list or the map pins to move between systems; the panel beside the model describes the selected one.</p>
+        <p id="model-desc" class="sr-only">An animated miniature of the whole operation: the Earth Port mega-city, the tether and its climbers, the Stratosphere Port, the L1 parasol, seeding gliders over a burned island, Leviathan harvesters and the reef. Use the left and right arrow keys, the systems list or the map pins to move between systems; the panel beside the model describes the selected one. Drag to move around the map, hold Ctrl and scroll or pinch to zoom, right-drag or Shift-drag to rotate, or use the map buttons; on the keyboard, plus and minus zoom, Q and E rotate, and 0 resets the view.</p>
         <div id="fallback" hidden>The 3D model couldn't load. The system list below still opens each system's specs.</div>
         <div class="pins" id="pins"></div>
+        <div class="mapctl" role="group" aria-label="Map view">
+          <button type="button" data-map="in" aria-label="Zoom in"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></button>
+          <button type="button" data-map="out" aria-label="Zoom out"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10"/></svg></button>
+          <button type="button" data-map="left" aria-label="Rotate left"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 5.5A5 5 0 1 1 3 9"/><path d="M4.5 2v3.5H8"/></svg></button>
+          <button type="button" data-map="right" aria-label="Rotate right"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.5 5.5A5 5 0 1 0 13 9"/><path d="M11.5 2v3.5H8"/></svg></button>
+          <button type="button" data-map="reset" aria-label="Reset view"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8 8 3l5.5 5"/><path d="M4 7v6h8V7"/></svg></button>
+        </div>
+        <span class="map-hint mono" id="map-hint" aria-hidden="true">Hold Ctrl and scroll to zoom</span>
         <nav class="dock" id="dock" aria-label="Model systems"></nav>
       </div>
       <div class="mcard" id="mcard"></div>
@@ -1103,7 +1121,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
         ${current ? `<button class="btn sm" type="button" data-go="${current - 1}">Previous</button>` : ''}
         <button class="btn sm primary" type="button" data-go="${(current + 1) % STOPS.length}">${current === STOPS.length - 1 ? 'Back to overview' : current ? 'Next system' : 'Start the tour'}</button>
       </div>
-      ${current ? '' : '<span class="hint mono">Arrow keys, the list below, or a + on the model</span>'}`;
+      ${current ? '' : '<span class="hint mono">Pick a system, or drag the map to explore</span>'}`;
   }
   function updateLive() {
     const el = $('#live-val');
@@ -1144,7 +1162,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const a = dock.children[current];
     if (a) dock.scrollTo({ left: a.offsetLeft - dock.clientWidth / 2 + a.clientWidth / 2, behavior: reduceMQ.matches ? 'auto' : 'smooth' });
   }
-  let frameStop = null;
+  let frameStop = null, mapAction = null;
   function go(i) {
     current = (i + STOPS.length) % STOPS.length;
     renderCard(); sync();
@@ -1155,6 +1173,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); go(current + 1); }
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(current - 1); }
     else if (e.key === 'Escape' || e.key === 'Home') go(0);
+    else if (mapAction && mapAction(e.key)) e.preventDefault();
   });
   document.querySelectorAll('[data-fleet]').forEach((b) => b.addEventListener('click', () => {
     $('#model').scrollIntoView({ behavior: reduceMQ.matches ? 'auto' : 'smooth', block: 'start' });
@@ -1424,7 +1443,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
   // Ocean: wide enough that its edge never enters the frame; fog fades the distance into the page
-  const L = 420, DEPTH = 7;
+  const L = 900, DEPTH = 7;
   box(L * 2, 3, L * 2, M.seabedSide, 0, -DEPTH - 3, 0).material = [M.seabedSide, M.seabedSide, M.seabed, M.seabedSide, M.seabedSide, M.seabedSide];
   const water = new T.Mesh(new T.BoxGeometry(L * 2, DEPTH, L * 2), M.water);
   water.position.y = -DEPTH / 2;
@@ -2366,10 +2385,20 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const fwd = viewDir.clone().negate();
   const right = new T.Vector3().crossVectors(fwd, new T.Vector3(0, 1, 0)).normalize();
   const up = new T.Vector3().crossVectors(right, fwd).normalize();
-  const cam = { target: new T.Vector3(), zoom: 1 };
+  const cam = { target: new T.Vector3(), zoom: 1, az: 0, el: ELEV, azGoal: 0, elGoal: ELEV, zoomGoal: null };
+  const Y_UP = new T.Vector3(0, 1, 0);
+  // View axes for a given turn and tilt; stops frame against the orientation the camera is heading to
+  function basis(az, el) {
+    const a = AZ + az;
+    viewDir.set(Math.cos(el) * Math.sin(a), Math.sin(el), Math.cos(el) * Math.cos(a));
+    fwd.copy(viewDir).negate();
+    right.crossVectors(fwd, Y_UP).normalize();
+    up.crossVectors(right, fwd).normalize();
+  }
   let tween = null, W = 1, H = 1;
 
   frameStop = (i, instant) => {
+    basis(cam.azGoal, cam.elGoal);
     const sr = stage.getBoundingClientRect(), dr = dock.getBoundingClientRect();
     let l = 12, r = W - 12, t = 20, b = dr.top - sr.top - 10;
     if (!narrowMQ.matches) l = mcard.getBoundingClientRect().right - sr.left + 16;
@@ -2380,6 +2409,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const u = S / (H * zoom);
     const dx = (l + r) / 2 - W / 2, dy = (t + b) / 2 - H / 2;
     const target = new T.Vector3(...STOPS[i].focus).addScaledVector(right, -dx * u).addScaledVector(up, dy * u);
+    cam.zoomGoal = null;
     if (instant) { cam.target.copy(target); cam.zoom = zoom; tween = null; }
     else tween = { from: cam.target.clone(), fromZ: cam.zoom, to: target, toZ: zoom, t0: performance.now(), dur: 1700 };
   };
@@ -2394,6 +2424,95 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   }
   new ResizeObserver(resize).observe(stage);
   resize();
+
+  // ---------- Map controls ----------
+  // Drag to move; Ctrl + scroll (or plain scroll once the map is engaged) and pinch to zoom; right-drag, Shift-drag or a
+  // two-finger twist to rotate (vertical right-drag tilts). Plain scroll is left to the page until the map has been
+  // touched, so the full-height model never traps someone scrolling past it.
+  const ZMIN = 0.16, ZMAX = 10, EL_MIN = 0.32, EL_MAX = 1.2, REACH = 360;
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const flat = new T.Vector3();
+  function panBy(dx, dy) {
+    const u = S / (H * cam.zoom);
+    flat.set(fwd.x, 0, fwd.z).normalize();
+    cam.target.addScaledVector(right, -dx * u).addScaledVector(flat, dy * u / Math.sin(cam.el));
+    cam.target.x = clamp(cam.target.x, -REACH, REACH); cam.target.z = clamp(cam.target.z, -REACH, REACH);
+  }
+  // Zoom keeping the ground under (sx, sy), measured from the stage centre, where it was
+  function zoomAt(f, sx = 0, sy = 0) {
+    const z0 = cam.zoom, z1 = clamp(z0 * f, ZMIN, ZMAX), du = S / H * (1 / z0 - 1 / z1);
+    flat.set(fwd.x, 0, fwd.z).normalize();
+    cam.target.addScaledVector(right, sx * du).addScaledVector(flat, -sy * du / Math.sin(cam.el));
+    cam.zoom = cam.zoomGoal = z1;
+  }
+  const rotateBy = (d) => { cam.az += d; cam.azGoal = cam.az; };
+  const tiltBy = (d) => { cam.el = cam.elGoal = clamp(cam.el + d, EL_MIN, EL_MAX); };
+  const cv = renderer.domElement;
+  cv.style.touchAction = 'pan-y';
+  const ptrs = new Map();
+  let mode = null, engaged = false, pair = null, hintTimer = 0;
+  const hintEl = $('#map-hint');
+  const hint = () => { hintEl.classList.add('show'); clearTimeout(hintTimer); hintTimer = setTimeout(() => hintEl.classList.remove('show'), 1600); };
+  cv.addEventListener('contextmenu', (e) => e.preventDefault());
+  cv.addEventListener('pointerdown', (e) => {
+    cv.setPointerCapture(e.pointerId);
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    engaged = true; tween = null; stage.classList.add('grabbing');
+    mode = ptrs.size > 1 ? 'pinch' : e.button === 2 || e.shiftKey ? 'rotate' : 'pan';
+    pair = null;
+  });
+  cv.addEventListener('pointermove', (e) => {
+    const p = ptrs.get(e.pointerId);
+    if (!p) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y;
+    p.x = e.clientX; p.y = e.clientY;
+    if (mode === 'pinch' && ptrs.size >= 2) {
+      const [a, b] = [...ptrs.values()], r = stage.getBoundingClientRect();
+      const now2 = { d: Math.hypot(b.x - a.x, b.y - a.y), ang: Math.atan2(b.y - a.y, b.x - a.x), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+      if (pair) {
+        zoomAt(now2.d / pair.d, now2.mx - r.left - W / 2, now2.my - r.top - H / 2);
+        rotateBy(now2.ang - pair.ang);
+        panBy(now2.mx - pair.mx, now2.my - pair.my);
+      }
+      pair = now2;
+    } else if (mode === 'rotate') { rotateBy(-dx * 0.008); tiltBy(dy * 0.004); }
+    else if (mode === 'pan') panBy(dx, dy);
+  });
+  const release = (e) => {
+    ptrs.delete(e.pointerId);
+    pair = null;
+    if (!ptrs.size) { mode = null; stage.classList.remove('grabbing'); }
+    else if (mode === 'pinch') mode = 'pan';
+  };
+  cv.addEventListener('pointerup', release);
+  cv.addEventListener('pointercancel', release);
+  stage.addEventListener('pointerleave', () => { engaged = false; });
+  cv.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey && !e.metaKey && !engaged) { hint(); return; }
+    e.preventDefault();
+    tween = null;
+    const r = stage.getBoundingClientRect();
+    zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)), e.clientX - r.left - W / 2, e.clientY - r.top - H / 2);
+  }, { passive: false });
+  const mapDo = (act) => {
+    tween = null;
+    if (act === 'in') cam.zoomGoal = clamp(cam.zoom * 1.5, ZMIN, ZMAX);
+    else if (act === 'out') cam.zoomGoal = clamp(cam.zoom / 1.5, ZMIN, ZMAX);
+    else if (act === 'left') cam.azGoal += Math.PI / 4;
+    else if (act === 'right') cam.azGoal -= Math.PI / 4;
+    else if (act === 'reset') {
+      // Turn back the short way, untilt, and re-frame the current system
+      cam.azGoal = 0; cam.az = Math.atan2(Math.sin(cam.az), Math.cos(cam.az)); cam.elGoal = ELEV;
+      frameStop(current, reduceMQ.matches);
+    }
+  };
+  document.querySelectorAll('[data-map]').forEach((b) => b.addEventListener('click', () => mapDo(b.dataset.map)));
+  mapAction = (key) => {
+    const act = { '+': 'in', '=': 'in', '-': 'out', _: 'out', q: 'left', Q: 'left', e: 'right', E: 'right', 0: 'reset' }[key];
+    if (act) mapDo(act);
+    return !!act;
+  };
+  let shadowExt = 110;
 
   // Fleet GeoJSON from the live glider positions (model space mapped near Earth Port's longitude)
   fleetFeatures = () => gliders.map((gl) => ({
@@ -2698,8 +2817,21 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       cam.zoom = (tween.fromZ + (tween.toZ - tween.fromZ) * e) * (1 - Math.sin(Math.PI * k) * 0.2);
       if (k >= 1) tween = null;
     }
-    const a = AZ + (still || paused ? 0 : Math.sin(now / 9000) * 0.04);
-    camera.position.set(cam.target.x + Math.cos(ELEV) * Math.sin(a) * 300, cam.target.y + Math.sin(ELEV) * 300, cam.target.z + Math.cos(ELEV) * Math.cos(a) * 300);
+    const ease8 = still ? 1 : Math.min(1, dt * 8);
+    if (!mode) {
+      cam.az += (cam.azGoal - cam.az) * ease8;
+      cam.el += (cam.elGoal - cam.el) * ease8;
+      if (cam.zoomGoal && !tween) cam.zoom += (cam.zoomGoal - cam.zoom) * ease8;
+    }
+    basis(cam.az, cam.el);
+    const ext = clamp(S / cam.zoom * W / H * 0.6, 110, 520);
+    if (Math.abs(ext - shadowExt) > 8) {
+      shadowExt = ext;
+      Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext });
+      sun.shadow.camera.updateProjectionMatrix();
+    }
+    const a = AZ + cam.az + (still || paused || mode ? 0 : Math.sin(now / 9000) * 0.04);
+    camera.position.set(cam.target.x + Math.cos(cam.el) * Math.sin(a) * 300, cam.target.y + Math.sin(cam.el) * 300, cam.target.z + Math.cos(cam.el) * Math.cos(a) * 300);
     camera.lookAt(cam.target);
     hills.visible = cam.target.y < 120;   // from orbit they'd sit huge and blurry behind the station
     sun.position.copy(cam.target).add(SUN_OFF);
