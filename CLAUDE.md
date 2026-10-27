@@ -55,11 +55,15 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   `frameStop` frames each stop at 0.74 of its `ext` (overview 0.88), and the vehicles carry detail: `makeGlider`
   (ceramic spine, swept wings with glowing leading edges `M.glow`, ventral frame and intake, twin fins),
   `makeClimber`, Midway rail beams and clamps, Leviathan windows, mast and crane, finned subs.
-  City (2026-10-26, user wants it like Atlantis in Stargate, one connected structure, never bridged islands):
-  a twelve-sided hub deck (`HUB_R`) a step above the piers with the tallest spires round the core (kept low on the
-  side the landing glider climbs across), and six piers in `ARMS` (extruded decks in a pier frame u/v, each a
-  district: arcology, foundry, harbor with the refit Leviathan at `HARBOR`, rectenna out to the catapult runway,
-  two residential with parks on side wings). Towers use `tower()`: one striped glazing mesh (`M.bands`, alpha-map
+  City (2026-10-26, user wants it like Atlantis in Stargate: one connected, symmetric base, never bridged islands):
+  a twelve-sided hub deck (`HUB_R`) a step above six identical piers 60 degrees apart (`ARMS`, `PIER_L/W/WING`,
+  extruded decks in a pier frame u/v with a wing either side). Hub spires stand on the west half only; the east
+  half stays low under the landing glider's climb-out. Piers: flight (0 deg: landing runway at `RZ` and the
+  catapult track at `CAT_Z` side by side, hangars, control tower; the user wants runways in one section), rectenna,
+  residential, arcology, foundry, and an enclosed shipyard (basin cut through the deck, walls, translucent roof,
+  sea gate, gantry; the viewer-facing wall is a glass curtain so the refit Leviathan at `HARBOR` shows). The wave
+  farm sits in the bay between the flight and rectenna piers. Whites are toned down (ceramic #e3e8ee, hemi 0.88)
+  after the user found the city too bright. Towers use `tower()`: one striped glazing mesh (`M.bands`, alpha-map
   stripes) instead of stacked bands, to keep the mesh count down. The mainland sits at the map edge (coast ~x -300,
   `landH`/`coastAt`, in the `hills` group, hidden only above y 80) since the elevator is in open ocean; loop 1
   crosses it at a faster cruise (`gl.cruise`), framed by the "Mainland" stop (AETH//01-H; harvesters and reef are
