@@ -1042,8 +1042,8 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // Zone anchors. Spread wide so the camera glides between areas instead of seeing one crowded tabletop.
   const P = { x: 0, z: 0 };       // Earth Port core
   const IC = { x: -210, z: 190 };   // burned island, out in the south-west corner off the mainland coast
-  const G = { x: 92, z: -62 };    // Leviathan gyre
-  const R0 = { x: 72, z: 92 };    // reef and Abyss mission
+  const G = { x: 200, z: -150 };   // Leviathan gyre, well out to sea
+  const R0 = { x: 165, z: 195 };   // reef and Abyss mission, out to sea on the other side
   const L1P = { x: -64, y: 150, z: -64 };
   const APEX_Y = 172;    // Apex Station: the top of the model's tether
   const MIDWAY_Y = 84;   // Stratosphere Port: high enough above the city for the whole mag-drop to play out
@@ -1810,14 +1810,20 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     parent.add(crowns, trunks);
   }
   plantTrees(parkTrees);
-  // Distant islands: low hazy hills that fade into the fog, giving the world depth
+  // Distant islets: small green islands with beaches, scattered far out so the ocean has depth
   const hillTrees = [];
   const hills = new T.Group();
   world.add(hills);
-  [[-70, -210, 24], [170, -170, 28], [200, 10, 18]].forEach(([x, z, r]) => {
-    const hill = shade(new T.Mesh(new T.IcosahedronGeometry(r, 1), M.land));
-    hill.scale.set(1, 0.22, 0.8); hill.position.set(x, -2, z); hills.add(hill);
-    for (let k = 0; k < 18; k++) { const a = rand() * Math.PI * 2, d = rand() * r * 0.6; hillTrees.push([x + Math.cos(a) * d, 2.2, z + Math.sin(a) * d * 0.8, 1.2 + rand() * 0.8]); }
+  M.islet = new T.MeshStandardMaterial({ color: 0x7c9a5e, roughness: 0.95, flatShading: true });
+  [[150, -280, 22], [320, -40, 18], [280, 230, 20], [-40, -330, 20], [40, 330, 16]].forEach(([x, z, r]) => {
+    const beach = shade(new T.Mesh(new T.CylinderGeometry(r * 1.08, r * 1.16, 0.7, 24), M.sand));
+    beach.scale.z = 0.85; beach.position.set(x, -0.3, z); hills.add(beach);
+    const mound = shade(new T.Mesh(new T.IcosahedronGeometry(r, 1), M.islet));
+    mound.scale.set(1, 0.24, 0.85); mound.position.set(x, -1.5, z); hills.add(mound);
+    for (let k = 0; k < 22; k++) {
+      const a = rand() * Math.PI * 2, f = rand() * 0.6, d = f * r;
+      hillTrees.push([x + Math.cos(a) * d, -1.5 + r * 0.24 * (1 - f * f) - 0.5, z + Math.sin(a) * d * 0.85, 1 + rand() * 0.7]);
+    }
   });
   plantTrees(hillTrees, hills);
   // Mainland coast west of the burned island: beach, farmland, forest and a ridge that a seeding route crosses.
@@ -1952,6 +1958,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     });
     const light = box(0.14, 0.08, 0.14, M.glow, 0, 0.1, 0, m);
     if (k % 3 === 0) box(0.4, 0.34, 0.4, M.trim, 0, -0.62, 0, m);   // parcel
+    m.scale.setScalar(0.65);   // small beside the towers
     m.rotation.order = 'YXZ';   // yaw toward the next stop, then pitch
     world.add(m);
     const from = droneWaypoint();
@@ -2089,6 +2096,10 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     return { m, r: 22 + k * 6, a: k * 2.1, w: 0.32 - k * 0.05, y: (k - 1) * 3, id: `S-0${k + 1}` };
   });
 
+  // Nothing in orbit casts on the sea: with the shadow box widened for zoomed-out views, the Apex rings and the
+  // parasol would otherwise print shadows far out on the water
+  [apex, parasol, ...panels.map((p) => p.m), ...debris.map((d) => d.m), ...sweepers.map((sw) => sw.m)].forEach((o) => o.traverse((c) => { c.castShadow = false; }));
+
   // ----- Angel gliders -----
   // Nose is +z. Ceramic-white spine, swept metamaterial wings with bio-luminescent leading edges, the ventral
   // bio-metallic frame that the tether inductors push on, its scramjet intake, and twin canted fins.
@@ -2102,7 +2113,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     m.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); m.rotation.y = -Math.atan2(z1 - z0, x1 - x0); parent.add(m);
   }
   const podGeo = new T.CylinderGeometry(0.13, 0.13, 1, 8); podGeo.rotateX(Math.PI / 2);
-  function makeGlider(scale = 1.3) {
+  function makeGlider(scale = 1) {
     const g = new T.Group();
     g.add(shade(new T.Mesh(wingGeo, M.accent)));
     const spine = shade(new T.Mesh(spineGeo, M.ceramic)); spine.position.set(0, 0.12, 0.05); g.add(spine);
@@ -2199,7 +2210,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const t = (k / 3 + li * 0.16) % 1;
     gliders.push({ g: makeGlider(), trail: makeTrail(), curve, t, out: t < 0.45, id: `ANGEL-${String(li * 3 + k + 1).padStart(2, '0')}`, seeding: false, acc: 0, lane: li, cruise: 48 });
   }));
-  const parked = makeGlider(1.1);
+  const parked = makeGlider(0.9);
   parked.position.set(P.x + 36, ARM_TOP + 0.45, RZ + 7.7);
   parked.rotation.y = -Math.PI / 2;
   // ANGEL-07 takes the second recovery option: a horizontal landing on the mega-city runway
@@ -2234,7 +2245,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // Angels waiting on Midway's rail mounts, nose out, each under its own mount
   [1.9, 3.1, 4.3].forEach((rot) => {
     const dx = toIsle.x * Math.cos(rot) - toIsle.y * Math.sin(rot), dz = toIsle.x * Math.sin(rot) + toIsle.y * Math.cos(rot);
-    const hang = makeGlider(1.1);
+    const hang = makeGlider(0.9);
     hang.position.set(P.x + dx * HANG_R, SY - 1.6, P.z + dz * HANG_R);
     hang.lookAt(P.x + dx * 12, SY - 1.6, P.z + dz * 12);
     box(4.6, 0.3, 0.5, M.trim, P.x + dx * HANG_R, SY - 0.45, P.z + dz * HANG_R).rotation.y = -Math.atan2(dz, dx);
@@ -2939,7 +2950,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     if (!still && !paused) step(dt, now);
     renderer.render(scene, camera);
     pins.forEach((b, i) => { if (b) { place(b, STOPS[i].pin); b.style.transform += ' translate(-13px, -13px)'; } });
-    TAGS.forEach((t) => place(t.el, t.at));
+    // Labels only while the view is close enough to read them; zoomed right out they'd pile up over the city
+    const tagsOn = S / cam.zoom < 150;
+    TAGS.forEach((t) => { t.el.style.visibility = tagsOn ? '' : 'hidden'; if (tagsOn) place(t.el, t.at); });
   }
   if (reduceMQ.matches) step(0, performance.now());
   requestAnimationFrame(frame);

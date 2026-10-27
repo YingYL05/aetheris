@@ -95,6 +95,10 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   traps scrolling. `cam.az/el/zoom` ease toward their goals; `basis()` rebuilds the view axes, and `frameStop`
   frames against the goal orientation, so stops work from any turn. Zoom 0.16-10, pan clamped to +/-360; the ocean
   is 1,800 wide and the shadow box widens when zoomed out so no edge shows.
+  Scale pass (2026-10-26, user asked to fix scaling and placement): the Leviathan gyre `G` (200, -150) and the reef
+  `R0` (165, 195) sit well out to sea instead of hugging the city; Angels are scale 1 (0.9 parked and hanging) and
+  drones 0.65 so neither dwarfs the towers; background islets are small green islands with beaches; place tags hide
+  when zoomed far out (`tagsOn`); nothing in orbit casts shadows on the sea.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink
