@@ -1026,8 +1026,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const IC = { x: -88, z: 38 };   // burned island
   const G = { x: 92, z: -62 };    // Leviathan gyre
   const R0 = { x: 72, z: 92 };    // reef and Abyss mission
-  const L1P = { x: -64, y: 96, z: -64 };
-  const MIDWAY_Y = 58;   // Stratosphere Port: high enough above the city for the whole mag-drop to play out
+  const L1P = { x: -64, y: 150, z: -64 };
+  const APEX_Y = 172;    // Apex Station: the top of the model's tether
+  const MIDWAY_Y = 84;   // Stratosphere Port: high enough above the city for the whole mag-drop to play out
   const STOPS = [
     { id: 'overview', short: 'Overview', focus: [P.x - 2, 6, P.z - 4], ext: [124, 80],
       code: 'AETH//01', title: 'The whole operation, in miniature',
@@ -1039,14 +1040,14 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'An artificial archipelago of titanium and ceramic, about the size of New York City, anchored in the calmest stretch of the equatorial Pacific. The model shows its heart: a raised hub around the tether anchor and the piers that grow out of it.',
       specs: [['Footprint', '~780 km², artificial archipelago'], ['Foundries', 'Lower-deck printing bays: shade panels to scramjet parts'], ['Runways', 'Titanium airstrips over the ocean for glider servicing'], ['Power', 'Orbital microwave beaming, wave motion, OTEC'], ['Supply', 'Off-grid, no external fuel lines']],
       live: () => ['Climbers on tether', '4'] },
-    { id: 'aura', short: 'Aura Core', focus: [P.x - 4, 3, P.z + 3], ext: [26, 18], pin: [P.x - 4, 6.5, P.z + 3],
+    { id: 'aura', short: 'Aura Core', focus: [P.x + 11, 3, P.z + 6.5], ext: [30, 20], pin: [P.x + 11, 5.5, P.z + 6.5],
       code: 'AETH//01-B', title: 'Aura Core · AETHER-OS',
       body: 'The intelligence that runs the system. It forecasts planetary weather, tilts the L1 shade, dispatches seeders and guards the platform without lethal force.',
       specs: [['Forecasting', '14,000 satellite vectors, 100 ms loop'], ['Defense', 'RF jamming, ECM, acoustic water barriers'], ['Persona', 'Modeled on the founder’s late partner'], ['API', 'Open access, zero cost']],
       live: () => ['Forecast cycle', fmt(sim.forecast)] },
-    { id: 'spire', short: 'Spire', focus: [P.x, MIDWAY_Y / 2 + 6, P.z], ext: [44, 78], pin: [P.x + 1.5, MIDWAY_Y * 0.7, P.z],
+    { id: 'spire', short: 'Spire', focus: [P.x, MIDWAY_Y / 2 + 4, P.z], ext: [56, 104], pin: [P.x + 1.5, MIDWAY_Y * 0.7, P.z],
       code: 'AETH//01-C', title: 'The Spire tether',
-      body: 'A carbon nanotube ribbon from the platform to geostationary orbit, held taut by the Apex Station’s asteroid counterweight. Maglev climbers ride it on laser-beamed power.',
+      body: 'A carbon nanotube ribbon from the anchor tower at the heart of the city to geostationary orbit, held taut by the Apex Station’s asteroid counterweight. Maglev climbers ride it on laser-beamed power.',
       specs: [['Length', '36,000 km to GEO'], ['Tracks', 'Dual ascender tracks, fiber-optic telemetry core'], ['Throughput', 'Thousands of metric tons per week'], ['Cost', '$0.18/kg to orbit']],
       live: () => ['Climbers ascending', `${sim.climbUp} of 4`] },
     { id: 'strato', short: 'Stratosphere Port', focus: [P.x - 9, MIDWAY_Y - 6, P.z + 3], ext: [62, 42], pin: [P.x + 4, MIDWAY_Y + 3, P.z - 3],
@@ -1054,7 +1055,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'A station on the tether at 30 km. Angels hang from electromagnetic rail mounts underneath, then drop along the tether into a magnetic slingshot that never dips below 20 km.',
       specs: [['Altitude', '30 km (100,000 ft), below 12 hPa'], ['Mounts', 'EM rail mounts, hydraulic backup clamps'], ['Launch', 'Hang level, pitch nose-down, free-fall, inductor J-curve, push-out'], ['Fleet', '48 Angel-class seeders']],
       live: () => ['Seeders airborne', `${sim.airborne} of 8 shown`] },
-    { id: 'apex', short: 'Apex Station', focus: [P.x + 14, 120, P.z - 2], ext: [88, 56], pin: [P.x - 12, 124, P.z + 4],
+    { id: 'apex', short: 'Apex Station', focus: [P.x + 14, APEX_Y - 2, P.z - 2], ext: [88, 56], pin: [P.x - 12, APEX_Y + 2, P.z + 4],
       code: 'AETH//01-E', title: 'Apex Station · GEO counterweight',
       body: 'The station whose mass keeps the tether taut. A captured asteroid at its centre is mined in zero gravity; around it sit labs, parasol forges, a drydock for a generation ship and the fleet that clears orbital debris.',
       specs: [['Anchor', 'Captured near-Earth asteroid at 36,000 km'], ['Mining', 'Rare-earth metals and silicates'], ['Labs', 'Long-term habitats under the Accord'], ['Forges', 'New L1 parasol panels, no launch cost'], ['Drydock', 'Generation ship under construction']],
@@ -1128,7 +1129,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     return b;
   });
   const TAGS = [
-    { text: '30 km · Midway', at: [P.x + 13, (2.4 + MIDWAY_Y) / 2, P.z] },
+    { text: '30 km · Midway', at: [P.x + 13, MIDWAY_Y * 0.72, P.z] },
     { text: 'Wave farm · power', at: [P.x + 54, 1.5, P.z + 24] },
     { text: 'Foundry pier', at: [P.x - 20, 14, P.z - 35] },
     { text: 'Shipyard · Leviathan refit', at: [P.x + 20, 12, P.z - 36] },
@@ -1404,7 +1405,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   M.vortex = new T.MeshBasicMaterial({ transparent: true, opacity: 0.4, side: T.DoubleSide, depthWrite: false });
   M.inst = new T.MeshStandardMaterial({ roughness: 0.9, flatShading: true });
   M.crown = new T.MeshStandardMaterial({ roughness: 0.9, flatShading: true });
-  M.park = new T.MeshStandardMaterial({ roughness: 0.95 });
+  M.park = new T.MeshStandardMaterial({ roughness: 0.95 });   // lawns and green roofs
   M.glow = new T.MeshBasicMaterial();   // the Angels' bio-luminescent skin
   const lineMat = new T.LineBasicMaterial();
 
@@ -1485,24 +1486,6 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const deck = cyl(10, 10, 1.4, M.ceramic, P.x, 1, P.z, 6);
   deck.rotation.y = Math.PI / 6;
   cyl(10.1, 10.1, 0.3, M.trim, P.x, 1.6, P.z, 6).rotation.y = Math.PI / 6;
-  cyl(1.6, 2.2, 3.2, M.trim, P.x, DECK, P.z, 16);
-  box(6, 2.6, 4, M.ceramic, P.x + 3, DECK, P.z + 5);
-  box(6.1, 0.4, 4.1, M.trim, P.x + 3, DECK + 2.6, P.z + 5);
-  for (let k = 0; k < 3; k++) {
-    const tooth = shade(new T.Mesh(new T.CylinderGeometry(0.62, 0.62, 3.8, 3), M.trim));
-    tooth.rotation.x = Math.PI / 2; tooth.position.set(P.x + 1.1 + k * 1.9, DECK + 3.25, P.z + 5); world.add(tooth);
-  }
-  for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; box(0.6, 1.3, 0.6, M.steel, P.x + Math.cos(a) * 2.5, DECK, P.z + Math.sin(a) * 2.5).rotation.y = -a; }
-  const aura = new T.Mesh(new T.SphereGeometry(2.2, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass);
-  aura.position.set(P.x - 4, DECK, P.z + 3); shade(aura); world.add(aura);
-  const auraRing = new T.Mesh(new T.TorusGeometry(2.3, 0.12, 8, 32), M.accent);
-  auraRing.rotation.x = Math.PI / 2; auraRing.position.set(P.x - 4, DECK + 0.1, P.z + 3); world.add(auraRing);
-  [[-5, -3], [-2.5, -6]].forEach(([dx, dz]) => { cyl(1.1, 1.1, 4, M.ceramic, P.x + dx, DECK, P.z + dz, 16); cyl(1.15, 1.15, 0.3, M.accent, P.x + dx, DECK + 3, P.z + dz, 16); });
-  for (let k = 0; k < 5; k++) {
-    const d = cyl(0.9, 0.9, 0.12, M.steel, P.x + 3 + k * 1.3 - 2, DECK + 0.6, P.z - 5.5 + (k % 2) * 0.4, 16);
-    d.rotation.x = 0.5;
-  }
-  const emitter = cyl(0.5, 0.8, 1.6, M.steel, P.x + 6.5, DECK, P.z - 1.5, 10);
   // Flight pier lines: landing runway and mag-lev catapult track, side by side (built with the piers)
   const RZ = P.z + 4.5, CAT_Z = P.z - 4.5;
 
@@ -1526,11 +1509,13 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     glz.position.set(x, base + 0.6 + gh / 2, z); glz.receiveShadow = true; parent.add(glz);
     box(w + 0.14, 0.3, w + 0.14, M.trim, x, base + h, z, parent);
     box(w * 0.4, 0.7, w * 0.3, M.trim, x - w * 0.15, base + h + 0.3, z + w * 0.15, parent);
+    box(w * 0.45, 0.08, w * 0.45, M.park, x + w * 0.2, base + h + 0.3, z - w * 0.05, parent);
     if (h > 12) cyl(0.05, 0.05, 2 + h * 0.06, M.steel, x + w * 0.28, base + h + 0.3, z - w * 0.28, 5, parent);
   }
   function lowRise(x, z, w, d, h, base, parent) {
     box(w, h, d, M.ceramic, x, base, z, parent);
     box(w * 0.4, 0.5, d * 0.4, M.trim, x, base + h, z, parent);
+    box(w - 0.3, 0.08, d - 0.3, M.park, x, base + h, z, parent);
     if (h > 2) box(w + 0.05, 0.32, d + 0.05, M.glass, x, base + h * 0.55, z, parent);
   }
   const HUB_R = 23, HUB_TOP = 1.9, ARM_TOP = 1.6;
@@ -1539,22 +1524,67 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   cyl(HUB_R + 0.15, HUB_R + 0.15, 0.3, M.trim, P.x, HUB_TOP - 0.45, P.z, 12);
   for (let k = 0; k < 12; k++) { const a = (k + 0.5) * Math.PI / 6; cyl(0.9, 0.9, DEPTH + 0.3, M.ceramic, P.x + Math.cos(a) * 18, -DEPTH, P.z + Math.sin(a) * 18, 10); }
   for (let k = 0; k < 12; k++) {
-    const a = (k + 0.5) * Math.PI / 6, r = 15 + (k % 2) * 3.5, x = P.x + Math.cos(a) * r, z = P.z + Math.sin(a) * r;
+    const a = (k + 0.5) * Math.PI / 6, r = 17.5 + (k % 2) * 2, x = P.x + Math.cos(a) * r, z = P.z + Math.sin(a) * r;
     const deg = (a * 180 / Math.PI) % 360;
     if (deg < 80 || deg > 280) {
       // East half: terminals and parks, low under the landing glider's climb-out
       if (k % 2) { cyl(3.2, 3.2, 0.08, M.park, x, HUB_TOP, z, 20); for (let t = 0; t < 7; t++) { const ta = rand() * 6.28, tr = rand() * 2.4; parkTrees.push([x + Math.cos(ta) * tr, HUB_TOP + 0.05, z + Math.sin(ta) * tr, 0.55 + rand() * 0.4]); } }
-      else lowRise(x, z, 4.4, 3.2, 2 + rand() * 1.6, HUB_TOP, world);
+      else lowRise(x, z, 3.6, 2.8, 2 + rand() * 1.6, HUB_TOP, world);
       continue;
     }
-    tower(x, z, 3 + rand() * 1.4, 20 + rand() * 14, HUB_TOP);
+    tower(x, z, 3 + rand() * 1.2, 12 + rand() * 12, HUB_TOP);
   }
+  // Elevator anchor, after the Ace Combat space elevator: a tiered tower on the core whose six buttresses sweep down
+  // into the hub in line with the piers, so the city reads as growing out of it. Garden terraces where the tiers
+  // step in, ribs up the shaft, running lights down the buttresses; the tether leaves from the crown.
+  const TIERS = [[6.4, 4.8, 9], [4.8, 3.5, 10], [3.5, 2.5, 10], [2.5, 1.6, 9]];   // bottom radius, top radius, height
+  let ty = DECK;
+  TIERS.forEach(([rb, rt, h], i) => {
+    cyl(rt, rb, h, M.ceramic, P.x, ty, P.z, 24);
+    const rg = rb + (rt - rb) * 0.62 + 0.06;
+    cyl(rg, rg, 0.8, M.glass, P.x, ty + h * 0.58, P.z, 24);
+    for (let k = 0; k < 6; k++) {
+      const a = (k + 0.5) * Math.PI / 3, rib = new T.Group();
+      rib.position.set(P.x, ty, P.z); rib.rotation.y = -a; world.add(rib);
+      box(0.4, h, 0.5, M.trim, (rb + rt) / 2 + 0.1, 0, 0, rib).rotation.z = Math.atan2(rb - rt, h);
+    }
+    ty += h;
+    if (i < TIERS.length - 1) {
+      cyl(rt + 1, rt + 1, 0.35, M.trim, P.x, ty - 0.2, P.z, 24);
+      cyl(rt + 0.9, rt + 0.9, 0.08, M.park, P.x, ty + 0.15, P.z, 24);
+      for (let t = 0; t < 10; t++) { const a = t / 10 * Math.PI * 2 + i; parkTrees.push([P.x + Math.cos(a) * (rt + 0.5), ty + 0.2, P.z + Math.sin(a) * (rt + 0.5), 0.35 + rand() * 0.15]); }
+    }
+  });
+  const ANCHOR_TOP = ty;   // the tether and the climbers start from the crown
+  const crown = new T.Mesh(new T.TorusGeometry(2.1, 0.4, 10, 32), M.trim);
+  crown.rotation.x = Math.PI / 2; crown.position.set(P.x, ANCHOR_TOP + 0.5, P.z); shade(crown); world.add(crown);
+  for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; box(0.3, 3.4, 1.4, M.ceramic, P.x + Math.cos(a) * 1.3, ANCHOR_TOP, P.z + Math.sin(a) * 1.3).rotation.y = -a; }
+  cyl(1.7, 1.7, 0.25, M.glow, P.x, ANCHOR_TOP + 1.2, P.z, 24);
+  const emitter = cyl(0.4, 0.6, 1.2, M.steel, P.x + 2.6, ANCHOR_TOP, P.z - 1.2, 10);
+  const BUTTRESS = [[5.6, DECK], [5.6, DECK + 15], [7.6, DECK + 11.5], [11.5, DECK + 6.5], [16.5, HUB_TOP + 2.6], [22.6, HUB_TOP], [22.6, HUB_TOP - 0.3], [5.6, HUB_TOP - 0.3]];
+  const butGeo = new T.ExtrudeGeometry(new T.Shape(BUTTRESS.map(([u, y]) => new T.Vector2(u, y))), { depth: 1.4, bevelEnabled: false });
+  butGeo.translate(0, 0, -0.7);
+  for (let k = 0; k < 6; k++) {
+    const a = k * Math.PI / 3, but = shade(new T.Mesh(butGeo, [M.ceramic, M.trim]));
+    but.position.set(P.x, 0, P.z); but.rotation.y = -a; world.add(but);
+    [[8, DECK + 9.9], [11.5, DECK + 6.7], [15, HUB_TOP + 3.4], [19, HUB_TOP + 1.6]].forEach(([u, y]) => box(0.3, 0.14, 1.5, M.glow, P.x + Math.cos(a) * u, y, P.z + Math.sin(a) * u).rotation.y = -a);
+  }
+  // Aura Core moves out onto the hub, between the flight and rectenna piers
+  const AURA = { x: P.x + Math.cos(Math.PI / 6) * 13, z: P.z + Math.sin(Math.PI / 6) * 13 };
+  const aura = new T.Mesh(new T.SphereGeometry(2.2, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), M.glass);
+  aura.position.set(AURA.x, HUB_TOP, AURA.z); shade(aura); world.add(aura);
+  const auraRing = new T.Mesh(new T.TorusGeometry(2.3, 0.12, 8, 32), M.accent);
+  auraRing.rotation.x = Math.PI / 2; auraRing.position.set(AURA.x, HUB_TOP + 0.1, AURA.z); world.add(auraRing);
+  // Hub ring line for the city's maglev trains, running through the buttress feet
+  const ringRail = new T.Mesh(new T.TorusGeometry(22.2, 0.14, 6, 96), M.trim);
+  ringRail.rotation.x = Math.PI / 2; ringRail.position.set(P.x, HUB_TOP + 0.05, P.z); world.add(ringRail);
   // Piers: six identical decks 60 degrees apart, a wing either side, so the hull reads as one symmetric base.
   // Each carries a district: flight (both runways), rectenna, residential, arcology, foundry, enclosed shipyard.
   const PIER_L = 60, PIER_W = 18, PIER_WING = 6;
   const ARMS = [[0, 'flight'], [60, 'rectenna'], [120, 'city'], [180, 'arcology'], [240, 'foundry'], [300, 'shipyard']];
   M.canopy = new T.MeshStandardMaterial({ transparent: true, opacity: 0.14, roughness: 0.15, depthWrite: false, color: 0xcfe4f2 });
   let sled = null;
+  const tramPiers = [];
   ARMS.forEach(([a, kind]) => {
     const L = PIER_L, w = PIER_W, B = PIER_WING;
     const ang = a * Math.PI / 180, ux = Math.cos(ang), uz = Math.sin(ang);
@@ -1574,6 +1604,12 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     for (let u = 26; u < L - 3; u += 9) [-1, 1].forEach((sv) => cyl(0.8, 0.8, DEPTH + 0.3, M.ceramic, u, -DEPTH, sv * (kind === 'shipyard' ? 7.4 : 4), 10, grp));
     [-1, 1].forEach((sv) => cyl(0.8, 0.8, DEPTH + 0.3, M.ceramic, 0.68 * L, -DEPTH, sv * (w2 + B / 2), 10, grp));
     if (kind !== 'flight' && kind !== 'shipyard') box(L - 24, 0.04, 0.3, M.trim, (L + 22) / 2, ARM_TOP, 0, grp);
+    if (kind === 'city' || kind === 'arcology' || kind === 'foundry') {
+      // Tram line down the spine, and tree rows along both edges
+      box(L - 26, 0.06, 1.1, M.steel, (L + 22) / 2, ARM_TOP, 0, grp);
+      tramPiers.push({ grp, L });
+      for (let u = 22; u < L - 8; u += 3.2) [-1, 1].forEach((sv) => { const [x, z] = toWorld(u, sv * (w2 - 0.8)); parkTrees.push([x, ARM_TOP + 0.05, z, 0.45 + rand() * 0.2]); });
+    }
     const wingPark = (sv) => {
       const pu = 0.68 * L, pv = sv * (w2 + B / 2);
       cyl(B * 0.55, B * 0.55, 0.08, M.park, pu, ARM_TOP, pv, 20, grp);
@@ -1784,9 +1820,39 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   cable(CX + 1.8, CZ, WF.x, CZ);
   cable(CX - 1.8, CZ, P.x + 35, CZ);
 
+  // ----- City life: maglev trains round the hub, trams on the piers, ferries in the bays, air taxis overhead -----
+  function makeCars(n, parent = world) {
+    return Array.from({ length: n }, () => {
+      const c = new T.Group();
+      box(1.5, 0.55, 0.75, M.accent, 0, 0, 0, c);
+      box(1.3, 0.2, 0.78, M.glass, 0, 0.25, 0, c);
+      parent.add(c); return c;
+    });
+  }
+  const trains = [0, 1].map((k) => ({ cars: makeCars(4), a: k * Math.PI, dir: k ? -1 : 1 }));
+  const trams = tramPiers.map((tp, k) => ({ ...tp, cars: makeCars(2, tp.grp), ph: k * 1.7 }));
+  M.wake = new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false });
+  const ferries = [90, 150, 270].map((deg, k) => {
+    const g = new T.Group();
+    box(1.3, 0.5, 3.2, M.ceramic, 0, -0.2, 0, g);
+    box(1.34, 0.12, 3.24, M.accent, 0, 0.12, 0, g);
+    box(1, 0.6, 1.4, M.glass, 0, 0.3, -0.2, g);
+    const wake = new T.Mesh(new T.PlaneGeometry(1.2, 4), M.wake);
+    wake.rotation.x = -Math.PI / 2; wake.position.set(0, 0.03, -3.4); g.add(wake);
+    world.add(g);
+    return { g, a: deg * Math.PI / 180, ph: k * 2.1 };
+  });
+  const taxis = Array.from({ length: 8 }, (_, k) => {
+    const m = new T.Group();
+    box(0.9, 0.28, 0.6, M.accent, 0, 0, 0, m);
+    box(0.5, 0.18, 0.5, M.glass, 0.05, 0.28, 0, m);
+    world.add(m);
+    return { m, r: 28 + (k % 4) * 6, y: 34 + (k % 3) * 2.5, w: (k % 2 ? -1 : 1) * (0.1 + (k % 3) * 0.03), a: k * 0.8 };
+  });
+
   // ----- Spire tether + climbers + beam -----
-  const TOPY = 120;   // the tether ends at the Apex Station
-  cyl(0.22, 0.22, TOPY - DECK, M.tether, P.x, DECK, P.z, 8).castShadow = true;
+  const TOPY = APEX_Y - 2;   // the tether ends at the Apex Station
+  cyl(0.22, 0.22, TOPY - ANCHOR_TOP, M.tether, P.x, ANCHOR_TOP, P.z, 8).castShadow = true;
   function makeClimber(ox, oz) {
     const g = new T.Group();
     box(1.4, 2.4, 1.4, M.accent, 0, -1.2, 0, g);
@@ -1800,7 +1866,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   }
   const climbers = [0, 1, 2, 3].map((k) => {
     const off = k % 2 === 0 ? [1.05, 0] : [0, -1.05];
-    return { m: makeClimber(...off), y: 6 + k * 34, up: k % 2 === 0, off };
+    return { m: makeClimber(...off), y: ANCHOR_TOP + 2 + k * (TOPY - ANCHOR_TOP - 8) / 4, up: k % 2 === 0, off };
   });
   const beam = new T.Mesh(new T.CylinderGeometry(0.12, 0.12, 1, 6, 1, true), M.beam);
   world.add(beam);
@@ -1959,14 +2025,14 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const loops = [
     route([
       ...DROP.map(([d, y]) => atLane(0, d, y)),
-      [IC.x + 18, 16, IC.z - 14], [IC.x + 10, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z - 4], [IC.x - 6, 7, IC.z + 12],
+      [IC.x + 44, 42, IC.z - 12], [IC.x + 18, 16, IC.z - 14], [IC.x + 10, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z - 4], [IC.x - 6, 7, IC.z + 12],
       [IC.x + 14, 16, IC.z + 18], [-40, SY * 0.6, 34], atLane(0, HANG_R + 16, SY - 4), atLane(0, HANG_R + 3, SY - 1.4)
     ]),
     // Out over the mainland: across the coast, the farmland and the ridge, then back out to sea to seed
     route([
       ...DROP.map(([d, y]) => atLane(1, d, y)),
       [-120, 44, -26], [-300, 42, -24], [-368, 38, 20], [-320, 30, 70], [-180, 16, 62], [IC.x - 14, 8, IC.z + 10], [IC.x, 6.5, IC.z],
-      [IC.x + 12, 7, IC.z - 10], [IC.x + 22, 30, IC.z - 4], [-40, 48, 10], atLane(1, HANG_R + 16, SY - 4), atLane(1, HANG_R + 3, SY - 1.4)
+      [IC.x + 12, 7, IC.z - 10], [IC.x + 22, 30, IC.z - 4], [-46, SY * 0.7, 6], atLane(1, HANG_R + 16, SY - 4), atLane(1, HANG_R + 3, SY - 1.4)
     ])
   ];
   // Per lane: the inductor on the tether, the rail mount under Midway, the field it throws (a translucent
@@ -2030,16 +2096,16 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // ANGEL-07 takes the second recovery option: a horizontal landing on the mega-city runway
   const landCurve = route([
     ...DROP.map(([d, y]) => atLane(2, d, y)),
-    [IC.x + 18, 16, IC.z - 12], [IC.x + 12, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z],
+    [IC.x + 44, 42, IC.z - 10], [IC.x + 18, 16, IC.z - 12], [IC.x + 12, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z],
     [IC.x - 4, 7, IC.z + 14], [-50, 12, 66], [-6, 14, 64], [40, 8, 40], [84, 5, RZ + 2], [P.x + 62, ARM_TOP + 0.6, RZ],
-    [P.x + 42, ARM_TOP + 0.6, RZ], [P.x + 28, ARM_TOP + 0.6, RZ], [P.x + 16, 10, RZ - 6], [P.x + 22, 30, P.z - 30],
+    [P.x + 42, ARM_TOP + 0.6, RZ], [P.x + 28, ARM_TOP + 0.6, RZ], [P.x + 16, 10, RZ - 6], [P.x + 22, 30, P.z - 30], [P.x + 6, 56, P.z - 22],
     atLane(2, HANG_R + 16, SY - 4), atLane(2, HANG_R + 3, SY - 1.4)
   ]);
   gliders.push({ g: makeGlider(), trail: makeTrail(), curve: landCurve, t: 0.35, out: false, id: 'ANGEL-07', seeding: false, acc: 0, land: true, landed: false, lane: 2 });
   // ANGEL-08 uses the secondary method: the mag-lev catapult on the east runway, then a steep climb
   const catCurve = new T.CatmullRomCurve3([
     [P.x + 27, 2.2, CAT_Z], [P.x + 42, 2.2, CAT_Z], [P.x + 58, 2.5, CAT_Z], [P.x + 68, 9, CAT_Z - 0.5], [P.x + 74, 22, CAT_Z - 4],
-    [P.x + 66, SY - 5, P.z - 30], [P.x + 30, SY - 5, P.z - 36], [-30, SY - 6, -10], [IC.x + 22, 18, IC.z - 20], [IC.x + 10, 7, IC.z - 8],
+    [P.x + 66, SY - 5, P.z - 30], [P.x + 30, SY - 5, P.z - 36], [-30, SY - 6, -10], [-50, 44, 4], [IC.x + 22, 18, IC.z - 20], [IC.x + 10, 7, IC.z - 8],
     [IC.x - 10, 6.5, IC.z + 2], [IC.x - 2, 7, IC.z + 14], [IC.x + 18, 16, IC.z + 18], [-20, 22, 46], [40, 20, 36], [96, 12, 4],
     [P.x + 80, 5, CAT_Z], [P.x + 60, 2.4, CAT_Z], [P.x + 44, 2.2, CAT_Z], [P.x + 29, 2.2, CAT_Z - 0.3]
   ].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
@@ -2239,7 +2305,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     M.glow.color.setHex(pal.shade);
     M.bands.color.setHex(pal.glass); M.bands.emissive.setHex(pal.accent); M.bands.emissiveIntensity = pal.glow * 0.35;
     laneFx.forEach((f) => { f.mat.color.setHex(pal.accent); f.lmat.color.setHex(pal.accent); f.ring.material.color.setHex(pal.accent); });
-    M.crown.color.setHex(pal.crown); M.inst.color.setHex(0xffffff); M.park.color.setHex(0xd6e8cf);
+    M.crown.color.setHex(pal.crown); M.inst.color.setHex(0xffffff); M.park.color.setHex(0xa9cc93);
     M.accent.emissive.setHex(pal.accent); M.accent.emissiveIntensity = pal.glow * 0.5;
     M.glass.emissive.setHex(pal.accent); M.glass.emissiveIntensity = pal.glow * 0.35;
     lineMat.color.setHex(pal.line);
@@ -2297,18 +2363,41 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(stage);
 
   function step(dt, now) {
+    // City traffic
+    trains.forEach((tr) => {
+      tr.a += dt * 0.22 * tr.dir;
+      tr.cars.forEach((c, i) => {
+        const a = tr.a - i * 0.075 * tr.dir;
+        c.position.set(P.x + Math.cos(a) * 22.2, HUB_TOP + 0.35, P.z + Math.sin(a) * 22.2);
+        c.rotation.y = -a + Math.PI / 2;
+      });
+    });
+    trams.forEach((tm) => {
+      const u = 24 + (tm.L - 33) * (0.5 - 0.5 * Math.cos(now / 5200 + tm.ph));
+      tm.cars.forEach((c, i) => c.position.set(u + i * 1.6, ARM_TOP + 0.35, 0));
+    });
+    ferries.forEach((f) => {
+      const k = now / 9000 + f.ph, r = 27 + 34 * (0.5 - 0.5 * Math.cos(k)), out = Math.sin(k) > 0;
+      f.g.position.set(P.x + Math.cos(f.a) * r, 0.15, P.z + Math.sin(f.a) * r);
+      f.g.rotation.y = Math.atan2(Math.cos(f.a), Math.sin(f.a)) + (out ? 0 : Math.PI);
+    });
+    taxis.forEach((tx) => {
+      tx.a += dt * tx.w;
+      tx.m.position.set(P.x + Math.cos(tx.a) * tx.r, tx.y + Math.sin(now / 1300 + tx.r) * 0.6, P.z + Math.sin(tx.a) * tx.r);
+      tx.m.rotation.y = -tx.a + (tx.w > 0 ? -Math.PI / 2 : Math.PI / 2);
+    });
     // Climbers ride the tether; the lowest ascending one gets the power beam
     let beamTo = null;
     sim.climbUp = 0;
     climbers.forEach((c, k) => {
       c.y += (c.up ? 1 : -1) * dt * 9;
-      if (c.up && c.y > TOPY - 4) { c.y = 5; log('SPIRE', `Climber C-${k + 1} handoff at GEO`); }
-      if (!c.up && c.y < 5) c.y = TOPY - 4;
+      if (c.up && c.y > TOPY - 4) { c.y = ANCHOR_TOP + 2; log('SPIRE', `Climber C-${k + 1} handoff at GEO`); }
+      if (!c.up && c.y < ANCHOR_TOP + 2) c.y = TOPY - 4;
       c.m.position.set(P.x + c.off[0], c.y, P.z + c.off[1]);
       if (c.up) { sim.climbUp++; if (!beamTo || c.y < beamTo.y) beamTo = c; }
     });
     if (beamTo) {
-      const a = new T.Vector3(P.x + 6.5, DECK + 1.6, P.z - 1.5), b = beamTo.m.position;
+      const a = new T.Vector3(P.x + 2.6, ANCHOR_TOP + 1.2, P.z - 1.2), b = beamTo.m.position;
       const len = a.distanceTo(b);
       beam.position.copy(a).lerp(b, 0.5);
       beam.scale.set(1, len, 1);
@@ -2561,7 +2650,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     const a = AZ + (still || paused ? 0 : Math.sin(now / 9000) * 0.04);
     camera.position.set(cam.target.x + Math.cos(ELEV) * Math.sin(a) * 300, cam.target.y + Math.sin(ELEV) * 300, cam.target.z + Math.cos(ELEV) * Math.cos(a) * 300);
     camera.lookAt(cam.target);
-    hills.visible = cam.target.y < 80;   // from orbit they'd sit huge and blurry behind the station
+    hills.visible = cam.target.y < 120;   // from orbit they'd sit huge and blurry behind the station
     sun.position.copy(cam.target).add(SUN_OFF);
     sun.target.position.copy(cam.target);
     sun.target.updateMatrixWorld();

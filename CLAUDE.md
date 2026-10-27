@@ -68,6 +68,14 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   `landH`/`coastAt`, in the `hills` group, hidden only above y 80) since the elevator is in open ocean; loop 1
   crosses it at a faster cruise (`gl.cruise`), framed by the "Mainland" stop (AETH//01-H; harvesters and reef are
   I and J). Terrain base colours are deliberately dark because the light rig washes flat colour toward white.
+  Elevator anchor and tether length (2026-10-26, user): the tether base is a tiered anchor tower after the Ace
+  Combat space elevator (`TIERS`, garden terraces, ribs, crown with the power emitter; `ANCHOR_TOP` ~40), with six
+  buttresses in line with the piers so the city reads as growing out of it. Hub spires stand at r 17.5-19.5 and stay
+  under ~26 so the anchor is the tallest thing in the city; Aura Core sits on the hub at `AURA`. Midway is at
+  `MIDWAY_Y` 84 and the Apex at `APEX_Y` 172 so the tether has room (the user found it cramped). City life (the
+  user wants it to feel lived in, and green): maglev trains on the hub ring rail, trams on three pier spines,
+  ferries shuttling out through three bays, air taxis circling at y 34+, tree rows along piers, green roofs on
+  low-rise and tower tops.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink
