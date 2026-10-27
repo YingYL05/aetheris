@@ -2358,7 +2358,7 @@
     // Each vehicle, sized to fill the stand; flying craft hover above it
     const fit = (o, v) => {
       const bb = new T.Box3().setFromObject(o), size = bb.getSize(new T.Vector3());
-      const k = (v.wl !== undefined ? 6.6 : 7.4) / Math.max(size.x, size.z, size.y * 1.6);
+      const k = (v.wl !== undefined ? 9.4 : 7.4) / Math.max(size.x, size.z, size.y * 1.6);
       o.scale.multiplyScalar(k);
       const b2 = new T.Box3().setFromObject(o), c = b2.getCenter(new T.Vector3());
       o.position.x -= c.x; o.position.z -= c.z;
@@ -2369,46 +2369,112 @@
       return holder;
     };
     const take = (o) => { world.remove(o); return o; };
-    // Extra detail for the close-up (ship units): deck rails with lights, lifeboat pods, rooftop solar, a mast
+    // The showcase Leviathan: a larger, more detailed build of the same trimaran, in the model's ship units (bow +z,
+    // deck top y 1.15, flight deck to starboard at x 3.85, campus to port), so the life below works on it unchanged
+    const big = new T.Group();
+    hull(2.8, 17, 1.4, M.accent, 0, -0.55, 0, big);
     [-1, 1].forEach((sx) => {
-      box(0.06, 0.25, 11, M.trim, sx * 5.12, 1.15, 0.3, lev);
-      for (let z = -5; z <= 5.5; z += 1.1) box(0.08, 0.06, 0.08, M.glow, sx * 5.12, 1.42, z, lev);
-      for (let z = -4; z <= 4.6; z += 1.7) {
-        const pod = shade(new T.Mesh(new T.SphereGeometry(0.22, 12, 8), M.ceramic)); pod.scale.set(1, 0.8, 2.2); pod.position.set(sx * 5.32, 0.62, z); lev.add(pod);
-        box(0.3, 0.06, 0.6, M.glass, sx * 5.32, 0.74, z, lev);
+      hull(1.2, 13, 1, M.accent, sx * 4.3, -0.45, -0.3, big);
+      box(0.05, 0.3, 12, M.glass, sx * 4.92, -0.1, -0.3, big);
+      box(0.05, 0.3, 14, M.glass, sx * 1.42, -0.05, 0.2, big);
+    });
+    [-5, -1.6, 1.8, 5].forEach((z) => box(9.8, 0.3, 0.9, M.ceramic, 0, 0.45, z, big));
+    box(10.6, 0.3, 13, M.ceramic, 0, 0.85, 0.2, big);
+    // Flight deck: dark strip, centre dashes, edge lights, parked jets, a control island and a deck lift
+    box(2.5, 0.04, 12.6, M.steel, 3.85, 1.15, 0.2, big);
+    for (let z = -5.6; z < 6.4; z += 1.2) box(0.12, 0.02, 0.6, M.ceramic, 3.85, 1.19, z, big);
+    for (let z = -6; z <= 6.5; z += 0.8) [2.62, 5.08].forEach((x) => box(0.07, 0.05, 0.07, M.glow, x, 1.19, z, big));
+    [[4.5, -4.8], [4.5, -3.8], [3.3, 5.4], [3.3, 4.5]].forEach(([x, z]) => { const j = makeJet(big); j.scale.setScalar(0.5); j.position.set(x, 1.19, z); j.rotation.y = 0.6; });
+    box(0.6, 1.3, 1.6, M.ceramic, 2.85, 1.15, -1.4, big);
+    box(0.64, 0.35, 1.64, M.glass, 2.85, 2.1, -1.4, big);
+    cyl(0.03, 0.03, 0.9, M.steel, 2.85, 2.45, -1.0, 5, big);
+    box(1.4, 0.03, 1.4, M.trim, 3.85, 1.17, 2.4, big);
+    // Campus to port: terraced habitat blocks with lit windows, green roofs and rooftop solar, a slim tower, gardens
+    [[-4, 2.4, 1.6], [3.3, 2, 1.3]].forEach(([z, d, h2]) => {
+      box(2, 1.5, d, M.ceramic, -3.9, 1.15, z, big);
+      box(2.04, 0.25, d + 0.04, M.glass, -3.9, 1.95, z, big);
+      box(1.4, h2, d * 0.7, M.ceramic, -4.15, 2.65, z, big);
+      box(1.44, 0.22, d * 0.7 + 0.04, M.glass, -4.15, 2.65 + h2 * 0.55, z, big);
+      box(1.3, 0.06, d * 0.65, M.park, -4.15, 2.65 + h2, z, big);
+      box(0.04, 0.14, d - 0.3, M.glow, -4.92, 1.6, z, big);
+      [-0.3, 0.3].forEach((dz) => { box(0.5, 0.04, 0.5, M.glass, -3.25, 2.67, z + dz, big).rotation.z = 0.25; });
+    });
+    box(1.2, 3.6, 1.2, M.ceramic, -3.9, 1.15, -0.5, big);
+    box(1.24, 0.3, 1.24, M.glass, -3.9, 3.9, -0.5, big);
+    box(0.04, 2, 0.14, M.glow, -4.52, 1.9, -0.5, big);
+    cyl(0.03, 0.03, 1.6, M.steel, -3.9, 4.75, -0.5, 5, big);
+    box(2.4, 0.04, 1.8, M.park, -3.9, 1.15, 5.5, big);
+    [[-3.2, 5], [-4.5, 5.9], [-3.4, 6.2], [-4.6, 4.9], [-3.3, 1.4], [-4.5, 1.6], [-3.3, -2.1]].forEach(([x, z]) => {
+      cyl(0.05, 0.07, 0.5, M.trim, x, 1.2, z, 5, big);
+      const crown = shade(new T.Mesh(new T.SphereGeometry(0.36, 8, 6), M.crown)); crown.position.set(x, 1.95, z); big.add(crown);
+    });
+    // Bridge forward: three stepped decks with glass bands, a radar mast and dish
+    [[3.6, 1.2, 3.4, 0], [3, 1, 2.8, 1.2], [2.2, 0.8, 2, 2.2]].forEach(([w, h, d, y]) => {
+      box(w, h, d, M.ceramic, 0, 1.15 + y, 3.9, big);
+      box(w + 0.04, 0.25, d + 0.04, M.glass, 0, 1.15 + y + h * 0.55, 3.9, big);
+    });
+    box(0.14, 2.2, 0.14, M.steel, 0, 4.15, 4.2, big);
+    box(1.6, 0.12, 0.3, M.trim, 0, 5.6, 4.2, big);
+    cyl(0.4, 0.4, 0.24, M.ceramic, 0, 6.35, 4.2, 14, big);
+    // Solar sails between the bridge and the forge
+    [-1.25, 1.25].forEach((x) => {
+      box(0.12, 4.6, 0.12, M.steel, x, 1.15, 1.9, big);
+      box(0.08, 2.8, 2.6, M.glass, x, 2.7, 1.9, big).rotation.y = 0.3 * Math.sign(x);
+    });
+    // Forge with twin stacks, the moon pool, the drone hive (pads and a hangar), and the stern crane
+    box(1.5, 1.4, 2.2, M.trim, 0, 1.15, -0.4, big);
+    [-0.4, 0.4].forEach((x) => { cyl(0.2, 0.26, 1.8, M.steel, x, 2.55, -0.8, 10, big); cyl(0.22, 0.22, 0.12, M.glow, x, 4.35, -0.8, 10, big); });
+    cyl(0.85, 0.85, 0.04, M.glass, 0, 1.16, -2.4, 24, big);
+    [[1.5, -3.2], [1.5, 0.3], [-1.6, 0.3], [-1.5, -3.2]].forEach(([x, z]) => { cyl(0.6, 0.6, 0.05, M.trim, x, 1.15, z, 20, big); cyl(0.62, 0.62, 0.03, M.glow, x, 1.2, z, 20, big); });
+    box(3.4, 1, 1.4, M.ceramic, 0, 1.15, -5.4, big);
+    [-0.85, 0.85].forEach((x) => box(1.2, 0.8, 0.06, M.glass, x, 1.15, -4.67, big));
+    cyl(0.18, 0.22, 1.4, M.trim, 2, 1.15, -6.2, 8, big);
+    box(0.18, 0.18, 3, M.trim, 2, 2.45, -7.2, big).rotation.x = -0.35;
+    // Rails with lights, lifeboat pods along the hulls
+    [-1, 1].forEach((sx) => {
+      box(0.06, 0.25, 13, M.trim, sx * 5.25, 1.15, 0.2, big);
+      for (let z = -6; z <= 6.5; z += 1.1) box(0.08, 0.06, 0.08, M.glow, sx * 5.25, 1.42, z, big);
+      for (let z = -5; z <= 5.4; z += 1.5) {
+        const pod = shade(new T.Mesh(new T.SphereGeometry(0.22, 12, 8), M.ceramic)); pod.scale.set(1, 0.8, 2.2); pod.position.set(sx * 5.45, 0.62, z); big.add(pod);
+        box(0.3, 0.06, 0.6, M.glass, sx * 5.45, 0.74, z, big);
       }
     });
-    [-3.8, 2.6].forEach((z) => [-0.45, 0.45].forEach((dx) => { box(0.7, 0.05, 0.9, M.glass, -3.85 + dx, 2.63, z, lev).rotation.z = 0.25; }));
-    cyl(0.03, 0.03, 1.4, M.steel, -3.85, 4.45, -0.6, 5, lev);
+    // Stern booms holding a shorter sweep net
+    const net = [], arcN = Array.from({ length: 13 }, (_, k) => { const a = Math.PI * k / 12; return new T.Vector3(Math.cos(a) * 4.6, 0.12, -9.6 - Math.sin(a) * 2.8); });
+    net.push(new T.Vector3(-4.3, 0.12, -6.8), arcN[12], new T.Vector3(4.3, 0.12, -6.8), arcN[0]);
+    for (let k = 0; k < 12; k++) net.push(arcN[k], arcN[k + 1]);
+    for (let k = 1; k < 12; k += 2) net.push(arcN[k], new T.Vector3(0, 0.12, -6.9));
+    big.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(net), lineMat));
+    [-1, 1].forEach((sx) => { const b = box(0.12, 0.12, 2.6, M.steel, sx * 4.3, 0.5, -7.9, big); b.rotation.y = sx * 0.2; });
     // Life round the ship, in ship units: people on the decks, quadcopters, a jet on circuits, boats coming in to dock
     function makeLevLife() {
       const v3 = new T.Vector3(), v4 = new T.Vector3(), mt = new T.Matrix4(), qq = new T.Quaternion(), sc1 = new T.Vector3(1, 1, 1);
-      const AREAS = [[-4.9, -2.9, 4.1, 5.6], [-4.9, -2.9, 0.4, 1.3], [-4.9, -2.9, -2.6, -1.6], [4.75, 5.05, -5, 5.6], [-2, 2, 5.2, 5.9], [-1.2, 1.2, -5.3, -4.6]];
+      const AREAS = [[-4.9, -2.9, 4.7, 6.3], [-4.9, -2.9, 0.4, 2.1], [-4.9, -2.9, -2.6, -1.3], [4.75, 5.05, -5.8, 6.3], [-2, 2, 5.8, 6.5], [-1.4, 1.4, -2, -1.2]];
       const COLS = [0x1e293b, 0x334155, 0xf8fafc, 0x0ea5e9, 0x64748b, 0x0369a1, 0xe2e8f0];
       const pick = (a) => [a[0] + Math.random() * (a[1] - a[0]), a[2] + Math.random() * (a[3] - a[2])];
       const folk = Array.from({ length: 42 }, (_, i) => { const a = AREAS[i % AREAS.length], p = pick(a); return { a, p, t: pick(a), v: 0.3 + Math.random() * 0.3, wait: Math.random() * 2 }; });
       const pm = new T.InstancedMesh(new T.CylinderGeometry(0.045, 0.06, 0.24, 6), new T.MeshStandardMaterial({ roughness: 0.8 }), folk.length);
       const col = new T.Color();
       folk.forEach((f, i) => pm.setColorAt(i, col.setHex(COLS[i % COLS.length])));
-      lev.add(pm);
-      const PADS = [[1.5, -3.2], [1.5, 0.3], [-1.6, 0.3]];
+      big.add(pm);
+      const PADS = [[1.5, -3.2], [1.5, 0.3], [-1.6, 0.3], [-1.5, -3.2]];
       const quads = Array.from({ length: 4 }, (_, i) => {
-        const q = makeQuad(); q.scale.setScalar(0.3); lev.add(q);
-        const from = new T.Vector3(PADS[i % 3][0], 1.3, PADS[i % 3][1]);
+        const q = makeQuad(); q.scale.setScalar(0.3); big.add(q);
+        const from = new T.Vector3(PADS[i % 4][0], 1.3, PADS[i % 4][1]);
         q.position.copy(from);
         return { q, from, to: from.clone(), t: 1, hold: Math.random() * 2, dur: 3 };
       });
       const airPt = () => new T.Vector3((Math.random() - 0.5) * 16, 3 + Math.random() * 3, (Math.random() - 0.5) * 18);
-      const jet = makeJet(world); world.remove(jet); jet.scale.setScalar(0.5); lev.add(jet);
+      const jet = makeJet(world); world.remove(jet); jet.scale.setScalar(0.5); big.add(jet);
       const circuit = new T.CatmullRomCurve3([[3.85, 1.35, -4], [3.85, 1.4, 0.5], [3.85, 1.8, 5], [3.9, 3.6, 9], [7, 6.5, 13], [14, 8, 7], [16, 8, -6], [10, 6.5, -15], [4.5, 4, -12], [3.85, 2.2, -7.5]].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
       let jt = 0;
       // Boats: two sweep drones and a tender run loops that bring each alongside to dock, pause, then head out
       const boat = (g, pts, dock, ph) => ({ g, path: new T.CatmullRomCurve3(pts.map(([x, z]) => new T.Vector3(x, -0.12, z)), true, 'centripetal'), dock: new T.Vector3(dock[0], -0.12, dock[1]), t: ph });
-      const c1 = take(makeCat().g); c1.scale.setScalar(0.32); lev.add(c1);
-      const c2 = take(makeCat().g); c2.scale.setScalar(0.32); lev.add(c2);
+      const c1 = take(makeCat().g); c1.scale.setScalar(0.32); big.add(c1);
+      const c2 = take(makeCat().g); c2.scale.setScalar(0.32); big.add(c2);
       const tender = new T.Group();
       box(0.8, 0.4, 2, M.ceramic, 0, -0.2, 0, tender); box(0.82, 0.1, 2.02, M.accent, 0, 0.12, 0, tender); box(0.6, 0.4, 0.7, M.glass, 0, 0.2, -0.3, tender);
-      tender.scale.setScalar(0.45); lev.add(tender);
+      tender.scale.setScalar(0.45); big.add(tender);
       const boats = [
         boat(c1, [[13, -13], [7.6, -7], [6.1, -3.5], [6.3, 2], [11, 8], [16, -2]], [6.1, -3.5], 0),
         boat(c2, [[-13, 12], [-7.6, 6], [-6.1, 2.5], [-6.3, -3], [-11, -9], [-16, 2]], [-6.1, 2.5], 0.5),
@@ -2435,20 +2501,20 @@
           d.q.position.lerpVectors(d.from, d.to, e);
           if (d.t >= 1) {
             d.from.copy(d.to);
-            const onPad = d.from.y < 1.5, pad = PADS[Math.floor(Math.random() * 3)];
+            const onPad = d.from.y < 1.5, pad = PADS[Math.floor(Math.random() * 4)];
             d.to = onPad ? airPt() : (Math.random() < 0.5 ? new T.Vector3(pad[0], 1.3, pad[1]) : airPt());
             d.t = 0; d.hold = onPad ? 1.5 : 0.4; d.dur = 2.5 + Math.random() * 2;
           }
         });
         jt = (jt + dt * 5 / circuit.getLength()) % 1;
         jet.position.copy(circuit.getPointAt(jt));
-        jet.lookAt(lev.localToWorld(v4.copy(circuit.getPointAt((jt + 0.01) % 1))));
+        jet.lookAt(big.localToWorld(v4.copy(circuit.getPointAt((jt + 0.01) % 1))));
         boats.forEach((b) => {
           const here = b.path.getPointAt(b.t), slow = here.distanceTo(b.dock) < 1.2;
           b.t = (b.t + dt * (slow ? 0.25 : 1.6) / b.path.getLength()) % 1;
           const p = b.path.getPointAt(b.t);
           b.g.position.copy(p);
-          b.g.lookAt(lev.localToWorld(v4.copy(b.path.getPointAt((b.t + 0.005) % 1))));
+          b.g.lookAt(big.localToWorld(v4.copy(b.path.getPointAt((b.t + 0.005) % 1))));
         });
       };
     }
@@ -2456,9 +2522,9 @@
       { id: 'angel', name: 'Angel-class glider', kind: 'Seeding glider · ~50 m', fly: true, make: () => take(makeGlider(1)),
         blurb: 'Hangs under the Stratosphere Port, drops nose-down along the tether, and is bent into level flight by its magnets. Cruises at Mach 6, releases seed canisters 1,000 m over burned land, and glides home on sunlight.',
         parts: [['Spine and nose', 'Ceramic-white composite'], ['Wings', 'Swept metamaterial solar wings for the glide home'], ['Leading edges', 'Bio-luminescent skin, pressurized before release'], ['Belly frame', 'Bio-metallic frame the tether inductors push on'], ['Intake', 'Ventral scramjet intake, lights at Mach 3'], ['Fins', 'Twin canted tail fins'], ['Pods', 'Seed canisters, released at 1,000 m'], ['Wingtips', 'Upturned winglets with lights']] },
-      { id: 'leviathan', name: 'Leviathan-class harvester', kind: 'Ocean harvester · ~660 m', wl: 0, make: () => lev,
+      { id: 'leviathan', name: 'Leviathan-class harvester', kind: 'Ocean harvester · ~660 m', wl: 0, make: () => big,
         blurb: 'A trimaran twice the length of an aircraft carrier: it sweeps plastic from the gyres, forges it into drone parts, flies its own aircraft and houses a crew the size of a small town.',
-        parts: [['Hulls', 'Three hulls with pointed bows, windows along each'], ['Flight deck', 'Runway markings, parked jets, control island'], ['Campus', 'Habitat blocks, a slim tower, lawns and trees'], ['Bridge', 'Glass-banded bridge with a radar mast'], ['Sails', 'Two solar sails on masts'], ['Forge', 'Onboard 3D-printing foundry and its stack'], ['Hive', 'Glowing drone pads and hangar doors'], ['Crane', 'Stern crane for the net and drones'], ['Net', 'Trailing electromagnetic sweep net']] },
+        parts: [['Hulls', 'Three hulls with pointed bows under one broad deck'], ['Flight deck', 'Edge lights, parked jets, a deck lift and control island'], ['Campus', 'Terraced habitat blocks, a slim tower, gardens and trees'], ['Bridge', 'Three stepped decks with a radar mast'], ['Sails', 'Two tall solar sails'], ['Forge', '3D-printing foundry with twin stacks'], ['Moon pool', 'Opening in the hull for crewed submersibles'], ['Hive', 'Four glowing drone pads and a hangar'], ['Lifeboats', 'Pods along both hulls, rails with lights'], ['Net', 'Stern booms and the electromagnetic sweep net']] },
       { id: 'jet', name: 'Leviathan carrier jet', kind: 'Air wing', fly: true, make: () => { const j = makeJet(world); return take(j); },
         blurb: 'Each Leviathan flies its own aircraft off the flight deck like a carrier: patrols, survey runs and transfers to the city.',
         parts: [['Fuselage', 'Ceramic body with a pointed nose'], ['Wings', 'Swept wings, blue for things that move'], ['Tails', 'Twin canted tail fins']] },
