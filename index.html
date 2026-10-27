@@ -1098,7 +1098,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'A Leviathan sweeps the gyre with an electromagnetic net and forges the catch into drone parts and coral-seed scaffolds. Sweep drones from its hive vacuum microplastics with acoustic vortexes.',
       specs: [['Fleet', '64 Leviathan-class trimarans, 500+ m'], ['Net', 'Kilometer-wide sweep: macro-plastics, ghost nets, chemical pollutants'], ['Forge', 'Onboard 3D-printing foundries'], ['Hive', 'Thousands of drones: launch, recharge, data offload']],
       live: () => ['Captured this visit', `${sim.plastic} specks`] },
-    { id: 'reef', short: 'Reef & Abyss', focus: [R0.x - 5, -2, R0.z + 3], ext: [44, 30], pin: [R0.x, -1, R0.z],
+    { id: 'reef', short: 'Reef & Abyss', focus: [R0.x - 4, -2, R0.z + 2], ext: [54, 36], pin: [R0.x, -1, R0.z],
       code: 'AETH//01-J', title: 'Reef restoration & the Abyss mission',
       body: 'Drones from the Leviathans micro-weld heat-tolerant polyps onto bleached reef. A research Leviathan holds station while scientists dive a manned submersible from its moon pool to a hydrothermal vent.',
       specs: [['Reef drones', 'Micro-welding heat-tolerant polyps'], ['Sub-hub', 'Pressurized research campus, labs, observation lounges'], ['Crew', 'International teams aboard for months'], ['Dives', 'Manned submersibles via internal moon pools']],
@@ -2415,27 +2415,92 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     if (plasticMesh.instanceColor) plasticMesh.instanceColor.needsUpdate = true;
   }
 
-  // ----- Reef + submersibles + spar-buoy hub -----
+  // ----- Reef: a raised sandy shelf with brain, branching, fan and tube corals in reef colours. Bleached corals are
+  // white and come back to their colour as the drones restore them. Seagrass, rocks and fish round it out. -----
+  const REEF_R = (a) => 15 + Math.sin(a * 3 + 0.5) * 2.5 + Math.sin(a * 5 + 1.7) * 1.5;
+  const reefPolar = (x, z) => { const dx = x - R0.x, dz = (z - R0.z) / 0.75; return [Math.hypot(dx, dz), Math.atan2(dz, dx)]; };
+  const onReef = (x, z, pad = 1) => { const [d, a] = reefPolar(x, z); return d < REEF_R(a) - pad; };
+  const SHELF = 2.5, reefY = -DEPTH + SHELF;   // a shallow reef, a couple of units under the surface
+  // A shallow reef seen through clear water: corals and fish draw after the water layer (transparent, but fully
+  // opaque) so it doesn't wash them out, and glow a touch in their own colour. The shelf stays tinted, so it still
+  // reads as underwater.
+  M.coral = new T.MeshStandardMaterial({ roughness: 0.6, transparent: true, opacity: 1 });
+  M.coral.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>' + String.fromCharCode(10) + '  totalEmissiveRadiance += vColor * 0.18;');
+  };
+  {
+    const g = new T.ExtrudeGeometry(new T.Shape(Array.from({ length: 64 }, (_, k) => {
+      const a = k / 64 * Math.PI * 2, r = REEF_R(a);
+      return new T.Vector2(Math.cos(a) * r, Math.sin(a) * r * 0.75);
+    })), { depth: SHELF, bevelEnabled: false });
+    g.rotateX(Math.PI / 2); g.translate(0, reefY, 0);
+    const shelf = shade(new T.Mesh(g, M.sand)); shelf.position.set(R0.x, 0, R0.z); world.add(shelf);
+  }
+  const CORAL_GEO = [
+    new T.IcosahedronGeometry(0.8, 1),                                                              // brain
+    new T.ConeGeometry(0.45, 1.6, 6),                                                               // branching
+    (() => { const g = new T.CylinderGeometry(0.9, 0.9, 0.08, 12); g.rotateX(Math.PI / 2); return g; })(),   // fan
+    new T.CylinderGeometry(0.2, 0.26, 1.2, 7)                                                       // tube
+  ];
+  const PARTS = [1, 3, 1, 3];   // branching and tube corals grow in clusters of three
+  const REEF_COLS = [0xff5a3c, 0xff3d8b, 0xffc21a, 0x8a4dff, 0x00c9a7, 0xff7a00];
   const corals = [];
-  for (let n = 0; n < 400 && corals.length < 46; n++) {
-    // Coral heads sized to the ships at Leviathan scale
-    const x = R0.x + (rand() - 0.5) * 17, z = R0.z + (rand() - 0.5) * 12;
-    if (corals.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < 1.1)) continue;
-    corals.push({ x, z, s: 0.4 + rand() * 0.5, life: rand() < 0.3 ? 1 : 0 });
+  for (let n = 0; n < 2000 && corals.length < 120; n++) {
+    const x = R0.x + (rand() - 0.5) * 36, z = R0.z + (rand() - 0.5) * 28;
+    if (!onReef(x, z) || corals.some((c) => (c.x - x) ** 2 + (c.z - z) ** 2 < 0.9)) continue;
+    corals.push({ x, z, s: 0.45 + rand() * 0.55, type: Math.floor(rand() * 4), col: REEF_COLS[Math.floor(rand() * REEF_COLS.length)], rot: rand() * 6.28, life: rand() < 0.3 ? 1 : 0 });
   }
-  const coralMesh = new T.InstancedMesh(new T.IcosahedronGeometry(0.8, 0), M.inst, corals.length);
-  coralMesh.castShadow = true;
-  world.add(coralMesh);
+  const slots = [0, 0, 0, 0];
+  corals.forEach((c) => { c.slot = slots[c.type]; slots[c.type] += PARTS[c.type]; });
+  const coralMeshes = CORAL_GEO.map((g, t) => {
+    const m = new T.InstancedMesh(g, M.coral, Math.max(slots[t], 1));
+    m.castShadow = true; m.receiveShadow = true; m.renderOrder = 3; world.add(m); return m;
+  });
+  const CLUSTER = [[0, 0], [0.35, 0.2], [-0.25, 0.3]];
   function drawCoral() {
-    corals.forEach((c, i) => {
-      mtx.compose(pv.set(c.x, -DEPTH + 0.5 * c.s, c.z), q.identity(), sc.set(c.s, c.s * 1.3, c.s));
-      coralMesh.setMatrixAt(i, mtx);
-      coralMesh.setColorAt(i, col.setHex(pal.coralDead).lerp(col2.setHex(pal.coral), c.life));
+    corals.forEach((c) => {
+      const m = coralMeshes[c.type], k = c.s;
+      col.setHex(pal.coralDead).lerp(col2.setHex(c.col), c.life);
+      for (let p = 0; p < PARTS[c.type]; p++) {
+        const [ox, oz] = CLUSTER[p], h = 1 - p * 0.2;
+        q.setFromAxisAngle(UP, c.rot + p);
+        if (c.type === 0) mtx.compose(pv.set(c.x, reefY + 0.4 * k, c.z), q, sc.set(k, 0.7 * k, k));
+        else if (c.type === 1) mtx.compose(pv.set(c.x + ox * k, reefY + 0.8 * k * h, c.z + oz * k), q, sc.set(k * 0.8, k * h, k * 0.8));
+        else if (c.type === 2) mtx.compose(pv.set(c.x, reefY + 0.85 * k, c.z), q, sc.setScalar(k));
+        else mtx.compose(pv.set(c.x + ox * k, reefY + 0.6 * k * h, c.z + oz * k), q, sc.set(k, k * h, k));
+        m.setMatrixAt(c.slot + p, mtx); m.setColorAt(c.slot + p, col);
+      }
     });
-    coralMesh.instanceMatrix.needsUpdate = true;
-    if (coralMesh.instanceColor) coralMesh.instanceColor.needsUpdate = true;
+    coralMeshes.forEach((m) => { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; });
   }
-  const subs = [0, 1].map((k) => {
+  // Seagrass beds just off the shelf, and a few rocks along its edge
+  M.grass = new T.MeshStandardMaterial({ color: 0x2fae58, emissive: 0x1b6b34, emissiveIntensity: 0.5, roughness: 0.9, flatShading: true });
+  const blades = [];
+  for (let n = 0; n < 3000 && blades.length < 220; n++) {
+    const a = rand() * Math.PI * 2, r = REEF_R(a) + 0.5 + rand() * 5;
+    if (Math.sin(a * 2 + 1) < -0.2) continue;   // in beds, not a full ring
+    blades.push([R0.x + Math.cos(a) * r, R0.z + Math.sin(a) * r * 0.75, 0.6 + rand() * 0.9, rand() * 6.28]);
+  }
+  const grassMesh = new T.InstancedMesh(new T.ConeGeometry(0.08, 1, 4), M.grass, blades.length);
+  blades.forEach(([x, z, h, r], i) => {
+    mtx.compose(pv.set(x, -DEPTH + h, z), q.setFromAxisAngle(UP, r), sc.set(1.4, h * 2, 1.4));
+    grassMesh.setMatrixAt(i, mtx);
+  });
+  world.add(grassMesh);
+  for (let k = 0; k < 12; k++) {
+    const a = k / 12 * Math.PI * 2 + rand() * 0.3, r = REEF_R(a) - 0.6;
+    const rock = shade(new T.Mesh(new T.IcosahedronGeometry(0.5 + rand() * 0.6, 0), M.rock));
+    rock.position.set(R0.x + Math.cos(a) * r, reefY + 0.1, R0.z + Math.sin(a) * r * 0.75); rock.rotation.y = rand() * 6; world.add(rock);
+  }
+  // Two schools of fish circling over the reef
+  const FISH = 30;
+  const fishMesh = new T.InstancedMesh(new T.ConeGeometry(0.1, 0.36, 4), M.coral, FISH);
+  fishMesh.geometry.rotateX(Math.PI / 2);
+  const fish = Array.from({ length: FISH }, (_, i) => ({ school: i % 2, off: rand() * 6.28, dr: (rand() - 0.5) * 2.4, dy: rand() * 0.8, col: i % 2 ? 0xffd21f : 0x1fb8ff }));
+  fish.forEach((f, i) => fishMesh.setColorAt(i, col.setHex(f.col)));
+  fishMesh.renderOrder = 3;
+  world.add(fishMesh);
+  const subs = [0, 1, 2].map((k) => {
     const m = new T.Group();
     const hull = shade(new T.Mesh(new T.SphereGeometry(0.75, 14, 10), M.accent));
     hull.scale.set(1, 0.8, 2); m.add(hull);
@@ -2456,7 +2521,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   world.add(station);
   station.updateMatrixWorld();
   const moonPool = new T.Vector3(0, -0.6, -1.2).applyMatrix4(station.matrixWorld);
-  const VENT = { x: R0.x - 10, z: R0.z + 9 };
+  const VENT = { x: R0.x - 14, z: R0.z + 12 };   // just off the shelf, on the deep seabed
   [[0, 0, 1.6], [0.8, 0.5, 1.1], [-0.6, 0.6, 0.9]].forEach(([dx, dz, h]) => cyl(0.15, 0.5, h, M.glass, VENT.x + dx, -DEPTH, VENT.z + dz, 7));
   const BUB = 40, bubPos = new Float32Array(BUB * 3), bubPhase = [];
   for (let i = 0; i < BUB; i++) { bubPhase.push(Math.random()); bubPos[i * 3] = VENT.x; bubPos[i * 3 + 2] = VENT.z; }
@@ -2859,10 +2924,11 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     // Reef submersibles restore coral they pass
     let coralChanged = false;
     subs.forEach((s) => {
-      const a = now / 4000 * (s.k ? -1 : 1) + s.k * 2;
-      const x = R0.x + Math.cos(a) * (8 - s.k * 3), z = R0.z + Math.sin(a * 1.3) * (5 - s.k);
-      s.m.position.set(x, -DEPTH + 2 + Math.sin(now / 700) * 0.2, z);
-      s.m.lookAt(R0.x + Math.cos(a + 0.05) * (8 - s.k * 3), s.m.position.y, R0.z + Math.sin((a + 0.05) * 1.3) * (5 - s.k));
+      // Patrol loops sized to the reef shelf
+      const a = now / 4600 * (s.k % 2 ? -1 : 1) + s.k * 2, rx = 12 - s.k * 3.5, rz = 8.5 - s.k * 2.2;
+      const x = R0.x + Math.cos(a) * rx, z = R0.z + Math.sin(a * 1.3) * rz;
+      s.m.position.set(x, reefY + 1.4 + Math.sin(now / 700 + s.k) * 0.2, z);
+      s.m.lookAt(R0.x + Math.cos(a + 0.05) * rx, s.m.position.y, R0.z + Math.sin((a + 0.05) * 1.3) * rz);
       corals.forEach((c) => {
         if (c.life < 1 && (c.x - x) ** 2 + (c.z - z) ** 2 < 3) {
           const was = c.life; c.life = Math.min(1, c.life + dt * 0.8); coralChanged = true;
@@ -2871,6 +2937,15 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       });
     });
     if (coralChanged) drawCoral();
+    fish.forEach((f, i) => {
+      const a = now / (f.school ? 3800 : 5200) * (f.school ? -1 : 1) + f.off * 0.15, r = (f.school ? 6 : 9) + f.dr;
+      const cx = R0.x + (f.school ? 4 : -3), cz = R0.z + (f.school ? -2 : 2);
+      const x = cx + Math.cos(a) * r, z = cz + Math.sin(a) * r * 0.7;
+      q.setFromAxisAngle(UP, Math.atan2(-Math.sin(a), Math.cos(a) * 0.7) + (f.school ? Math.PI : 0));   // nose along the swim
+      mtx.compose(pv.set(x, reefY + 2.2 + f.dy + Math.sin(now / 500 + f.off) * 0.1, z), q, sc.set(1, 1, 1));
+      fishMesh.setMatrixAt(i, mtx);
+    });
+    fishMesh.instanceMatrix.needsUpdate = true;
 
     // Abyss mission: the manned sub shuttles between the moon pool and the vent; the vent vents
     const dive = (1 - Math.cos(now / 5200)) / 2;

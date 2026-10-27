@@ -105,6 +105,11 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   `R0` (165, 195) sit well out to sea instead of hugging the city; Angels are scale 1 (0.9 parked and hanging) and
   drones 0.65 so neither dwarfs the towers; background islets are small green islands with beaches; place tags hide
   when zoomed far out (`tagsOn`); nothing in orbit casts shadows on the sea.
+  Reef (2026-10-27, user: more colour and area): a shallow sandy shelf (`REEF_R`, `SHELF` 2.5) with ~120 corals in
+  four shapes (brain, branching, fan, tube; `CORAL_GEO`, `PARTS`) and reef colours (`REEF_COLS`); bleached ones are
+  white until the drones restore them. Corals and fish use `M.coral`, transparent but fully opaque with renderOrder 3
+  so they draw after the water layer and keep their colour, plus a slight glow in their own colour. Seagrass beds,
+  rocks and two fish schools; three reef drones (scale 0.4) patrol the shelf; the vent sits just off it.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink
