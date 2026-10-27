@@ -140,6 +140,11 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   Counterparts, not copies, of Foreman's "+" grid, halftone, dimension lines and blueprint grid. Second pass (user
   asked for "a bit more"): stronger dots and grain (7%), tick strips along the top of white cards and under the
   model bar, and rotated `.gutter` margin labels per section (shown only above 1400px wide).
+- To scale (2026-10-27): the user agreed the 3D model stays "not to scale" for legibility (keep the order city >
+  Leviathan > Angel > drone, and keep each scene internally consistent). True sizes live in the fleet section's
+  `.to-scale` strip: Angel (~50 m, bomber class, the user's figure) beside a B-2 at 52 m; a Leviathan (~660 m) beside
+  a 333 m carrier; the Earth Port footprint (~780 km² with its bays) inside an area-true circle for all of NYC (783
+  km²) beside Manhattan (59 km²). Each drawing is to scale with its own scale bar.
 - Footer: a decorative sinusoidal lat/long graticule (`.graticule`, generated paths, central meridian 94°E so the
   Earth Port marker at 1.8°N 140.2°W lands right of the wordmark). If you change those coordinates, regenerate the
   paths and keep them matching the fleet GeoJSON.

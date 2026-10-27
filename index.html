@@ -404,12 +404,22 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
 .anatomy .note { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--ink); font-size: 15px; color: var(--muted); }
 .anatomy .note b { color: var(--ink); font-weight: 600; }
 .drawing .glow { fill: none; stroke: var(--blue); stroke-width: 3.5; stroke-linecap: round; }
+/* To-scale comparisons in the fleet section: flat drawings at true relative size */
+.to-scale { margin-top: 40px; }
+.to-scale-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px; margin-bottom: 14px; }
+.to-scale-head p { margin: 0; max-width: 72ch; color: var(--muted); font-size: 15px; }
+.to-scale-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.to-scale-grid figure { margin: 0; padding: 12px; }
+.to-scale-grid .drawing svg, .to-scale-grid svg { min-width: 0; }
+.drawing .angel { fill: var(--blue-soft); stroke: var(--blue); stroke-width: 1.2; }
+.drawing .fp { fill: rgb(15 23 42 / 0.16); }
 .methods { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
 @media (max-width: 1080px) {
   .launch-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 12px; }
   .launch-metrics div:nth-child(4) { padding-left: 0; border-left: 0; }
   .methods { grid-template-columns: 1fr; }
   .anatomy { grid-template-columns: 1fr; }
+  .to-scale-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
   .launch-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -715,6 +725,56 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
         </dl>
         <div class="row"><button class="btn sm" type="button" data-show="reef">Show the Abyss mission <span class="arrow" aria-hidden="true">↑</span></button> <button class="btn sm" type="button" data-show="harvest">Show the sweep <span class="arrow" aria-hidden="true">↑</span></button></div>
       </article>
+    </div>
+    <div class="to-scale">
+      <div class="to-scale-head">
+        <span class="mono kicker">To scale</span>
+        <p>The model above shrinks distances and stretches heights so everything stays readable. These are the real sizes, side by side.</p>
+      </div>
+      <div class="to-scale-grid">
+        <figure class="drawing cut">
+          <svg viewBox="0 0 340 214" role="img" aria-label="To scale, seen from above: an Angel-class glider about 50 metres across, beside a B-2 bomber at 52 metres. They are about the same size.">
+            <text class="t-ink" x="14" y="20">ANGEL VS BOMBER</text>
+            <path class="angel" d="M90 46 L165 126 L162 134 L114 130 L90 154 L66 130 L18 134 L15 126 Z"/>
+            <path class="draft" d="M90 52 L158 124 M90 52 L22 124"/>
+            <path class="hull" d="M255 66 L333.5 114 L330 121 L302 111 L284 127 L255 115 L226 127 L208 111 L180 121 L176.5 114 Z"/>
+            <text x="90" y="178" text-anchor="middle">ANGEL · ~50 M</text>
+            <text x="255" y="178" text-anchor="middle">B-2 · 52 M SPAN</text>
+            <path class="ln-thin" d="M20 198H170M20 193V203M95 195V201M170 193V203"/>
+            <text x="178" y="202">50 M</text>
+          </svg>
+        </figure>
+        <figure class="drawing cut">
+          <svg viewBox="0 0 340 214" role="img" aria-label="To scale, seen from above: a Leviathan-class trimaran about 660 metres long, twice the length of a 333-metre aircraft carrier, with a much wider deck spanning its three hulls.">
+            <text class="t-ink" x="14" y="20">LEVIATHAN VS CARRIER</text>
+            <rect class="deck" x="54" y="50" width="226" height="56"/>
+            <path class="hull" d="M28 72H282L308 78L282 84H28Z"/>
+            <path class="draft dash" d="M70 56H270"/>
+            <text x="28" y="42">LEVIATHAN · ~660 M</text>
+            <text x="54" y="122">FLIGHT DECK · CAMPUS · HIVE</text>
+            <path class="hull" d="M40 146H166L180 152L176 168H56L40 160Z"/>
+            <path class="draft" d="M58 166L150 148"/>
+            <text x="40" y="186">AIRCRAFT CARRIER · 333 M</text>
+            <path class="ln-thin" d="M200 198H242M200 193V203M242 193V203"/>
+            <text x="250" y="202">100 M</text>
+          </svg>
+        </figure>
+        <figure class="drawing cut">
+          <svg viewBox="0 0 340 214" role="img" aria-label="To scale, seen from above: the Earth Port archipelago, about 780 square kilometres, inside a dashed circle the area of New York City's five boroughs (783 square kilometres), beside Manhattan at 59 square kilometres.">
+            <text class="t-ink" x="14" y="20">EARTH PORT VS NEW YORK</text>
+            <circle class="ln-thin dash" cx="112" cy="120" r="79"/>
+            <polygon class="fp" points="103.0,102.0 103.0,56.0 109.3,48.0 114.7,48.0 121.0,56.0 121.0,102.0"/><polygon class="fp" points="123.1,103.2 162.9,80.2 173.0,81.7 175.7,86.3 171.9,95.8 132.1,118.8"/><polygon class="fp" points="132.1,121.2 171.9,144.2 175.7,153.7 173.0,158.3 162.9,159.8 123.1,136.8"/><polygon class="fp" points="121.0,138.0 121.0,184.0 114.7,192.0 109.3,192.0 103.0,184.0 103.0,138.0"/><polygon class="fp" points="100.9,136.8 61.1,159.8 51.0,158.3 48.3,153.7 52.1,144.2 91.9,121.2"/><polygon class="fp" points="91.9,118.8 52.1,95.8 48.3,86.3 51.0,81.7 61.1,80.2 100.9,103.2"/>
+            <polygon class="fp" points="142.0,120.0 138.0,132.5 127.0,141.7 112.0,145.0 97.0,141.7 86.0,132.5 82.0,120.0 86.0,107.5 97.0,98.3 112.0,95.0 127.0,98.3 138.0,107.5"/>
+            <path class="angel" d="M270 66 L280 71 L284 99 L282 132 L277 162 L268 174 L263 168 L261 137 L260 104 L263 76 Z"/>
+            <text x="112" y="124" text-anchor="middle" class="t-ink">EARTH PORT</text>
+            <text x="112" y="211" text-anchor="middle">~780 KM² WITH ITS BAYS</text>
+            <text x="270" y="196" text-anchor="middle">MANHATTAN · 59 KM²</text>
+            <text x="14" y="36">DASHED: ALL OF NYC · 783 KM²</text>
+            <path class="ln-thin" d="M240 52H290M240 47V57M290 47V57"/>
+            <text x="298" y="56">10 KM</text>
+          </svg>
+        </figure>
+      </div>
     </div>
   </section>
 
