@@ -11,7 +11,8 @@ from EM rail mounts under Midway (30 km, below 12 hPa), free-fall along the teth
 J-curve that levels out at 25-27 km (3-5 km drop, up to 9.5 G, never below 20 km), scramjets light at Mach 3, cruise
 Mach 6. Secondary is a mag-lev catapult on a 3.5 km titanium runway (ejection Mach 1.5+, steep climb). In the model:
 inductor hoops under Midway, gliders on rail mounts, mag-drop routes, contrails only after ignition (`tIgn`), and
-ANGEL-08 on the east-runway catapult with a sled. Page: section #launch (05). Apex, Accord, Open access are 06-08.
+ANGEL-08 on the east-runway catapult with a sled. Page: section #launch (05), which also has a plan-view anatomy
+drawing of an Angel (`.anatomy`) and the "vertical maglev" drop / bend / push-out explainer. Apex, Accord, Open access are 06-08.
 Canister release at 1,000 m (main brief) still happens over the target after the high cruise. Its section 11 is the page outline; keep
 copy and figures consistent with it. When versions or sections disagree, the newest and most specific text wins:
 Mach 6+, Leviathans are 500+ m and number 64 (they are "the Whales"; the small boats in the model are sweep drones),
@@ -45,6 +46,10 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   `P`, `IC`, `G`, `R0`, `L1P` at the top of the stops code; each stop frames one zone tightly so the camera glides
   between them. The ocean is 840 units wide with fog in the page colour, so no edge ever shows; the sun's shadow box
   follows the camera. The user found the earlier tabletop version too clumped, so don't pull zones back together.
+  Upscale (2026-10-26, user asked for bigger, more detailed models): the stage fills the viewport under the header,
+  `frameStop` frames each stop at 0.74 of its `ext` (overview 0.88), and the vehicles carry detail: `makeGlider`
+  (ceramic spine, swept wings with glowing leading edges `M.glow`, ventral frame and intake, twin fins),
+  `makeClimber`, Midway rail beams and clamps, Leviathan windows, mast and crane, finned subs.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink
