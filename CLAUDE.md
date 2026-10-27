@@ -41,6 +41,11 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   drones show beneath it (`under`), aircraft hover. Showcase-only Leviathan detail (rails with lights, lifeboat pods,
   rooftop solar, mast) and life (`makeLevLife`: people walking the decks, quadcopters hopping pads, a jet on circuits,
   two sweep drones and a tender that slow to dock alongside); it pauses with Pause motion and reduced motion.
+  True scale (2026-10-27, user: make this page 1:1 and realistic): the showcase Leviathan (`big`) is built at 20 m
+  per unit (660 x 140 m, deck ~24 m up, buildings 20-70 m), and everything on it matches: 1.8 m crew walking at
+  real pace, 3 m industrial drones, 16 m jets, 20 m sweep drones, a 12 m tender, 10 m lifeboats. Each vehicle has
+  `mpu` (metres per model unit) so the live scale bar (`.sc-scale`) is true; zoom with the + and - buttons or
+  keys, or Ctrl + scroll, to see the crew. The live model is unaffected and stays not to scale.
 - Run: `python -m http.server 4392` in this folder, then http://127.0.0.1:4392/. The user wants this project on
   localhost only (2026-10-25): don't republish it as an artifact unless asked. An old artifact copy exists at
   https://claude.ai/artifact/QagTVDZE4HUintYKJ4GHk6 (version 6, now stale).

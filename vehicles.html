@@ -47,7 +47,12 @@
       <div class="tabs veh-tabs" role="tablist" aria-label="Vehicles" aria-orientation="vertical" id="veh-tabs"></div>
       <div class="veh-stage cut" id="showcase" tabindex="0" role="region" aria-label="3D vehicle view">
         <p class="sc-fallback" hidden>The 3D view couldn't load. The parts list still describes each vehicle.</p>
-        <span class="sc-hint mono" aria-hidden="true">Drag to turn · arrow keys</span>
+        <span class="sc-hint mono" aria-hidden="true">Drag to turn · arrow keys · + and − to zoom</span>
+        <div class="sc-zoom" role="group" aria-label="Zoom">
+          <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
+          <button type="button" data-zoom="out" aria-label="Zoom out">−</button>
+        </div>
+        <div class="sc-scale mono" aria-hidden="true"><i></i><span>10 m</span></div>
       </div>
       <div class="veh-info" role="tabpanel" id="veh-panel" tabindex="0"></div>
     </div>

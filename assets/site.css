@@ -548,3 +548,8 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   .veh-tabs { display: flex; overflow-x: auto; }
   .veh-tabs button { flex: none; }
 }
+.sc-zoom { position: absolute; right: 12px; top: 12px; display: grid; gap: 1px; background: var(--line); }
+.sc-zoom button { width: 34px; height: 34px; border: 0; background: rgb(255 255 255 / 0.94); color: var(--ink); font-size: 18px; cursor: pointer; }
+.sc-zoom button:hover { background: var(--bg-2); }
+.sc-scale { position: absolute; right: 14px; bottom: 12px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; color: var(--ink); font-size: 11px; pointer-events: none; }
+.sc-scale i { display: block; height: 6px; border: 1.5px solid var(--ink); border-top: 0; }
