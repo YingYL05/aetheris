@@ -22,6 +22,10 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
 - Run: `python -m http.server 4392` in this folder, then http://127.0.0.1:4392/. The user wants this project on
   localhost only (2026-10-25): don't republish it as an artifact unless asked. An old artifact copy exists at
   https://claude.ai/artifact/QagTVDZE4HUintYKJ4GHk6 (version 6, now stale).
+- Hosting (2026-10-26): private repo github.com/YingYL05/aetheris; Cloudflare Workers Builds deploys every push to
+  `main` at https://aetheris.yingyuul05.workers.dev/ (the share link for the user's friends). The whole repo folder
+  is the asset directory, so `.assetsignore` keeps everything but `index.html` off the public site (it was serving
+  these notes and `.git`, whose history has the author email). Add any new non-public file to it.
 - Aesthetic (redesign 2026-10-25): Endfield idiom, but deliberately NOT like Foreman's landing (user's request; the
   earlier version felt clunky and too close). "Orbital telemetry": cool-grey page (#eceff3) with white cards (`--surface`) layered on it, one deep-navy section (telemetry, `.band.dark`, which redefines the tokens), hairline rules
   instead of boxed cards, chamfered corners (`.cut`), slanted tags (`.ptag`), big outlined section numerals, a
