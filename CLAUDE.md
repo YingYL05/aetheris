@@ -77,6 +77,11 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   ferries shuttling out through three bays, quadcopter drones (`cityDrones`) hopping between waypoints at y 30-39
   with spinning rotors, beacons and some parcels (the user wants drones for the high-tech feel, not flying cars), tree rows along piers, green roofs on
   low-rise and tower tops.
+  Burned island (2026-10-26, user: too close to the city): `IC` is out in the south-west corner (-210, 190), off
+  the mainland coast. Irregular outline (`ISLE_R`), beach and cliff body extruded from it, seeding tiles as columns
+  terraced to `isleH` (central hill and shoulder), charred snags that fall away as tiles green, and a restoration
+  camp facing the city. Seeds land via `tileAt`. All gliders cruise at 48 above y 14 so the long legs don't drag;
+  the mainland route crosses the coast near the town (z ~150) and meets the island from the coast.
   The wave farm (anchor `WF`, south of the core) must read as connected infrastructure: strings, buoys, collector
   platform, cables to the city, and its "Wave farm · power" tag.
 - Topography (user, 2026-10-25): wanted as a subtle add-on, never the signature. Unlike Foreman's full-bleed ink

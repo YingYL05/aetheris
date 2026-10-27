@@ -1023,7 +1023,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // ---------- Model stops ----------
   // Zone anchors. Spread wide so the camera glides between areas instead of seeing one crowded tabletop.
   const P = { x: 0, z: 0 };       // Earth Port core
-  const IC = { x: -88, z: 38 };   // burned island
+  const IC = { x: -210, z: 190 };   // burned island, out in the south-west corner off the mainland coast
   const G = { x: 92, z: -62 };    // Leviathan gyre
   const R0 = { x: 72, z: 92 };    // reef and Abyss mission
   const L1P = { x: -64, y: 150, z: -64 };
@@ -1065,12 +1065,12 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'A thin-film reflector parked between the Sun and Earth. The Climate Council sets its angle; Aura holds it there.',
       specs: [['Area', '1.8 million km²'], ['Material', 'Thin-film metamaterial mesh'], ['Effect', 'Diffuses 1.2% of solar irradiance'], ['Supply', 'New panels from the Apex Station forges'], ['Distance', '~1.5 million km (not to scale)']],
       live: () => ['Shade trim', `${sim.tilt >= 0 ? '+' : '−'}${Math.abs(sim.tilt).toFixed(3)}°`] },
-    { id: 'angels', short: 'Angel Fleet', focus: [IC.x + 4, 5, IC.z], ext: [72, 48], pin: [IC.x, 5, IC.z - 4],
+    { id: 'angels', short: 'Angel Fleet', focus: [IC.x + 4, 5, IC.z], ext: [84, 56], pin: [IC.x, 9, IC.z - 4],
       code: 'AETH//01-G', title: 'Angel-class seeders',
       body: 'Gliders fly out at Mach 6+ on hydrogen, leaving only a water-vapor trail, and release canisters 1,000 m above burned land. They glide home on solar wings, then dock on the Midway rail or land on an Earth Port runway. Watch the island turn green.',
       specs: [['Fleet', '48 autonomous gliders, ceramic-white composite'], ['Outbound', 'Mag-drop J-curve to 26 km, scramjets at Mach 3, cruise Mach 6+'], ['Return', 'Solar glide on metamaterial wings, electric turbines'], ['Payload', 'Fungal spore matrices and mycorrhizae, growth bio-catalysts, native soil microbiota'], ['Recovery', 'Rail docking at 30 km, or a runway landing for servicing']],
       live: () => ['Island regrown', `${sim.tilesTotal ? Math.round(sim.tilesRegrown / sim.tilesTotal * 100) : 0}%`] },
-    { id: 'mainland', short: 'Mainland', focus: [-330, 2, 8], ext: [128, 82], pin: [-312, 4, -8],
+    { id: 'mainland', short: 'Mainland', focus: [-280, 2, 160], ext: [150, 96], pin: [-300, 4, 150],
       code: 'AETH//01-H', title: 'Over the mainland coast',
       body: 'Seeding routes cross the mainland at cruise altitude, over coastal towns, farmland and the ridge behind them, then swing back out to sea and drop to 1,000 m over the burn scar. All they leave behind is a water-vapor trail.',
       specs: [['Cruise', 'Mach 6 in the upper stratosphere, above weather and air traffic'], ['Trail', 'Water vapor only'], ['Map', 'Coast and ridge shown, not to scale']],
@@ -1431,49 +1431,80 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   water.renderOrder = 2;
   world.add(water);
 
-  // ----- Burned island (far west) with seeding tiles -----
-  const RECTS = [[-104, 26, -76, 48], [-98, 48, -84, 56], [-80, 30, -72, 42]];
-  const TOP = 2;
-  RECTS.forEach(([x0, z0, x1, z1]) => {
-    box(x1 - x0 + 2.4, DEPTH + 0.3, z1 - z0 + 2.4, M.sand, (x0 + x1) / 2, -DEPTH, (z0 + z1) / 2);
-    box(x1 - x0, DEPTH + TOP, z1 - z0, M.land, (x0 + x1) / 2, -DEPTH, (z0 + z1) / 2);
+  // ----- Burned island: an irregular coastline with a beach and low cliffs, stepped hills built from the seeding
+  // tiles, charred snags where it burned, and a small restoration camp on the shore facing the city -----
+  const ISLE_R = (a) => 21 + Math.sin(a * 3 + 1) * 4 + Math.sin(a * 5 + 2) * 2.5 + Math.sin(a * 7) * 1.5;
+  const inIsland = (x, z) => Math.hypot(x - IC.x, z - IC.z) < ISLE_R(Math.atan2(z - IC.z, x - IC.x)) - 1;
+  const TOP = 1.2;
+  // Ground height: a central hill and a lower shoulder, in half-unit steps so the tiles terrace
+  function isleH(x, z) {
+    const dx = x - IC.x, dz = z - IC.z, f = Math.hypot(dx, dz) / ISLE_R(Math.atan2(dz, dx));
+    const h = TOP + Math.max(0, 1 - f * f) * 4.5 + Math.max(0, 1 - Math.hypot(dx - 8, dz + 5) / 9) * 2.5;
+    return Math.round(h * 2) / 2;
+  }
+  const isleShape = (grow) => new T.Shape(Array.from({ length: 72 }, (_, k) => {
+    const a = k / 72 * Math.PI * 2, r = ISLE_R(a) + grow;
+    return new T.Vector2(Math.cos(a) * r, Math.sin(a) * r);
+  }));
+  [[2.6, 0.4, M.sand], [0.2, TOP, M.land]].forEach(([grow, top, mat]) => {
+    const g = new T.ExtrudeGeometry(isleShape(grow), { depth: DEPTH + top, bevelEnabled: false, curveSegments: 1 });
+    g.rotateX(Math.PI / 2); g.translate(0, top, 0);
+    const m = shade(new T.Mesh(g, mat)); m.position.set(IC.x, 0, IC.z); world.add(m);
   });
   const tiles = [], tileMap = new Map();
-  RECTS.forEach(([x0, z0, x1, z1]) => {
-    for (let x = x0 + 1; x < x1; x += 2) for (let z = z0 + 1; z < z1; z += 2) {
-      const key = `${x},${z}`;
-      if (tileMap.has(key)) continue;
-      const t = { x, z, hits: 0, grow: rand() < 0.22 ? 1 : 0, growing: false };
-      tileMap.set(key, t); tiles.push(t);
-    }
-  });
+  for (let i = -16; i <= 16; i++) for (let j = -16; j <= 16; j++) {
+    const x = IC.x + i * 2, z = IC.z + j * 2;
+    if (!inIsland(x, z)) continue;
+    const t = { x, z, h: isleH(x, z), hits: 0, grow: rand() < 0.22 ? 1 : 0, growing: false };
+    tileMap.set(`${i},${j}`, t); tiles.push(t);
+  }
+  const tileAt = (x, z) => tileMap.get(`${Math.round((x - IC.x) / 2)},${Math.round((z - IC.z) / 2)}`);
   sim.tilesTotal = tiles.length;
   sim.tilesRegrown = tiles.filter((t) => t.grow === 1).length;
-  const tileMesh = new T.InstancedMesh(new T.BoxGeometry(1.96, 0.2, 1.96), M.inst, tiles.length);
+  const tileMesh = new T.InstancedMesh(new T.BoxGeometry(1.96, 1, 1.96), M.inst, tiles.length);
   const crownMesh = new T.InstancedMesh(new T.IcosahedronGeometry(0.85, 0), M.crown, tiles.length);
-  const stumpMesh = new T.InstancedMesh(new T.CylinderGeometry(0.1, 0.16, 1, 5), M.stump, tiles.length);
-  tileMesh.receiveShadow = true; crownMesh.castShadow = true;
+  const stumpMesh = new T.InstancedMesh(new T.CylinderGeometry(0.08, 0.17, 1, 5), M.stump, tiles.length);
+  tileMesh.receiveShadow = true; tileMesh.castShadow = true; crownMesh.castShadow = true; stumpMesh.castShadow = true;
   world.add(tileMesh, crownMesh, stumpMesh);
   const mtx = new T.Matrix4(), q = new T.Quaternion(), sc = new T.Vector3(), pv = new T.Vector3(), col = new T.Color(), col2 = new T.Color();
-  tiles.forEach((t) => { t.jx = (rand() - 0.5) * 0.6; t.jz = (rand() - 0.5) * 0.6; t.s = 0.8 + rand() * 0.5; t.rot = rand() * 6; });
+  tiles.forEach((t) => { t.jx = (rand() - 0.5) * 0.6; t.jz = (rand() - 0.5) * 0.6; t.s = 0.8 + rand() * 0.5; t.rot = rand() * 6; t.v = 0.9 + rand() * 0.2; });
   let pal = PAL.light;
   function drawTile(i) {
     const t = tiles[i], g = t.grow;
-    mtx.compose(pv.set(t.x, TOP + 0.1, t.z), q.identity(), sc.set(1, 1, 1));
+    // Each tile is a column from the island body up to its terrace height, so the hills step
+    const hh = t.h - TOP + 0.1;
+    mtx.compose(pv.set(t.x, TOP - 0.1 + hh / 2, t.z), q.identity(), sc.set(1, hh, 1));
     tileMesh.setMatrixAt(i, mtx);
-    tileMesh.setColorAt(i, col.setHex(pal.burnt).lerp(col2.setHex(pal.green), g));
+    tileMesh.setColorAt(i, col.setHex(pal.burnt).lerp(col2.setHex(pal.green), g).multiplyScalar(t.v));
     q.setFromAxisAngle(pv.set(0, 1, 0), t.rot);
     const cs = Math.max(g, 0.001) * t.s;
-    mtx.compose(pv.set(t.x + t.jx, TOP + 0.2 + 1.3 * cs, t.z + t.jz), q, sc.set(cs * 1.2, cs * 1.6, cs * 1.2));
+    mtx.compose(pv.set(t.x + t.jx, t.h + 0.1 + 1.3 * cs, t.z + t.jz), q, sc.set(cs * 1.2, cs * 1.6, cs * 1.2));
     crownMesh.setMatrixAt(i, mtx);
+    // Charred snags stand where it burned and fall away as the ground greens
     const ss = Math.max(1 - g, 0.001);
-    mtx.compose(pv.set(t.x - t.jx, TOP + 0.2 + 0.4 * ss, t.z - t.jz), q, sc.set(1, 0.8 * ss, 1));
+    mtx.compose(pv.set(t.x - t.jx, t.h + 0.8 * ss * t.s, t.z - t.jz), q, sc.set(1, 1.6 * ss * t.s, 1));
     stumpMesh.setMatrixAt(i, mtx);
   }
   function drawTiles() {
     tiles.forEach((_, i) => drawTile(i));
     tileMesh.instanceMatrix.needsUpdate = true; crownMesh.instanceMatrix.needsUpdate = true; stumpMesh.instanceMatrix.needsUpdate = true;
     if (tileMesh.instanceColor) tileMesh.instanceColor.needsUpdate = true;
+  }
+
+  {
+    const a0 = Math.atan2(P.z - IC.z, P.x - IC.x), r0 = ISLE_R(a0) - 4.5;
+    const cx = IC.x + Math.cos(a0) * r0, cz = IC.z + Math.sin(a0) * r0, gy = isleH(cx, cz) + 0.05;
+    const camp = new T.Group(); camp.position.set(cx, gy, cz); camp.rotation.y = -a0; world.add(camp);
+    cyl(1.8, 1.8, 0.12, M.trim, 0, 0, -3, 24, camp);
+    cyl(1.9, 1.9, 0.06, M.glow, 0, 0.12, -3, 24, camp);
+    box(2.6, 1.4, 1.8, M.ceramic, -0.8, 0, 2.4, camp);
+    box(2.3, 0.08, 1.5, M.park, -0.8, 1.4, 2.4, camp);
+    for (let k = 0; k < 3; k++) box(0.9, 0.06, 2.4, M.glass, -3.2 - k * 1.2, 0.5, 1, camp).rotation.z = 0.5;
+    [[1.8, 3.6], [-4.8, -2.2]].forEach(([u, v]) => {
+      cyl(0.05, 0.05, 3.2, M.steel, u, 0, v, 5, camp);
+      box(0.18, 0.12, 0.18, M.glow, u, 3.2, v, camp);
+    });
+    box(7, 0.25, 1.2, M.trim, 4.5, -gy + 0.35, 0.8, camp);
   }
 
   // ----- Earth Port Anchor -----
@@ -1758,7 +1789,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const fields = [];
   for (let n = 0; n < 1500 && fields.length < 150; n++) {
     const z = -190 + rand() * 420, x = coastAt(z) - 6 - rand() * 44, y = landH(x, z);
-    if (y < 0.7 || y > 3.2 || (z > 0 && z < 34 && x > coastAt(z) - 16) || fields.some((f) => Math.abs(f.x - x) < 4.6 && Math.abs(f.z - z) < 3.8)) continue;
+    if (y < 0.7 || y > 3.2 || (z > 136 && z < 176 && x > coastAt(z) - 16) || fields.some((f) => Math.abs(f.x - x) < 4.6 && Math.abs(f.z - z) < 3.8)) continue;
     fields.push({ x, y, z, w: 3.4 + rand() * 1.4, d: 2.6 + rand() * 1.2, a: (rand() - 0.5) * 0.4, c: [0x8fa85a, 0x6f9a4c, 0xb09d58, 0x648f47][Math.floor(rand() * 4)] });
   }
   const fieldMesh = new T.InstancedMesh(new T.BoxGeometry(1, 0.4, 1), M.inst, fields.length);
@@ -1776,16 +1807,16 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   }
   plantTrees(forest, hills);
   for (let n = 0, built = 0; n < 300 && built < 28; n++) {
-    const z = 4 + rand() * 28, x = coastAt(z) - 2.5 - rand() * 12, y = landH(x, z);
+    const z = 140 + rand() * 28, x = coastAt(z) - 2.5 - rand() * 12, y = landH(x, z);
     if (y < 0.4 || y > 2.6) continue;
     const w = 1.3 + rand() * 1.1, d = 1.2 + rand(), h = 0.9 + rand() * 1.8;
     box(w, h, d, M.ceramic, x, y - 0.3, z, hills);
     box(w + 0.1, 0.2, d + 0.1, M.trim, x, y - 0.3 + h, z, hills);
     built++;
   }
-  box(9, 0.3, 1.2, M.trim, coastAt(16) + 3.5, 0.2, 16, hills);
-  cyl(0.45, 0.65, 4.5, M.ceramic, coastAt(36) - 1.2, landH(coastAt(36) - 1.2, 36) - 0.2, 36, 10, hills);
-  cyl(0.55, 0.55, 0.6, M.glow, coastAt(36) - 1.2, landH(coastAt(36) - 1.2, 36) + 4.3, 36, 10, hills);
+  box(9, 0.3, 1.2, M.trim, coastAt(156) + 3.5, 0.2, 156, hills);
+  cyl(0.45, 0.65, 4.5, M.ceramic, coastAt(176) - 1.2, landH(coastAt(176) - 1.2, 176) - 0.2, 176, 10, hills);
+  cyl(0.55, 0.55, 0.6, M.glow, coastAt(176) - 1.2, landH(coastAt(176) - 1.2, 176) + 4.3, 176, 10, hills);
   // Wave farm off the south island: four strings of articulated floats (wave-motion generators) with power
   // joints and mooring buoys, cabled to a collector platform and on to the city grid
   const floats = [];
@@ -2045,7 +2076,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     // Out over the mainland: across the coast, the farmland and the ridge, then back out to sea to seed
     route([
       ...DROP.map(([d, y]) => atLane(1, d, y)),
-      [-120, 44, -26], [-300, 42, -24], [-368, 38, 20], [-320, 30, 70], [-180, 16, 62], [IC.x - 14, 8, IC.z + 10], [IC.x, 6.5, IC.z],
+      [-120, 44, 20], [-300, 42, 96], [-368, 38, 150], [-330, 26, 214], [IC.x - 16, 8, IC.z + 8], [IC.x, 6.5, IC.z],
       [IC.x + 12, 7, IC.z - 10], [IC.x + 22, 30, IC.z - 4], [-46, SY * 0.7, 6], atLane(1, HANG_R + 16, SY - 4), atLane(1, HANG_R + 3, SY - 1.4)
     ])
   ];
@@ -2102,7 +2133,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const gliders = [];
   loops.forEach((curve, li) => [0, 1, 2].forEach((k) => {
     const t = (k / 3 + li * 0.16) % 1;
-    gliders.push({ g: makeGlider(), trail: makeTrail(), curve, t, out: t < 0.45, id: `ANGEL-${String(li * 3 + k + 1).padStart(2, '0')}`, seeding: false, acc: 0, lane: li, cruise: li ? 46 : 24 });
+    gliders.push({ g: makeGlider(), trail: makeTrail(), curve, t, out: t < 0.45, id: `ANGEL-${String(li * 3 + k + 1).padStart(2, '0')}`, seeding: false, acc: 0, lane: li, cruise: 48 });
   }));
   const parked = makeGlider(1.1);
   parked.position.set(P.x + 36, ARM_TOP + 0.45, RZ + 7.7);
@@ -2111,11 +2142,11 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const landCurve = route([
     ...DROP.map(([d, y]) => atLane(2, d, y)),
     [IC.x + 44, 42, IC.z - 10], [IC.x + 18, 16, IC.z - 12], [IC.x + 12, 7, IC.z - 10], [IC.x - 10, 6.5, IC.z],
-    [IC.x - 4, 7, IC.z + 14], [-50, 12, 66], [-6, 14, 64], [40, 8, 40], [84, 5, RZ + 2], [P.x + 62, ARM_TOP + 0.6, RZ],
+    [IC.x - 4, 7, IC.z + 14], [-110, 30, 130], [-30, 18, 70], [40, 8, 40], [84, 5, RZ + 2], [P.x + 62, ARM_TOP + 0.6, RZ],
     [P.x + 42, ARM_TOP + 0.6, RZ], [P.x + 28, ARM_TOP + 0.6, RZ], [P.x + 16, 10, RZ - 6], [P.x + 22, 30, P.z - 30], [P.x + 6, 56, P.z - 22],
     atLane(2, HANG_R + 16, SY - 4), atLane(2, HANG_R + 3, SY - 1.4)
   ]);
-  gliders.push({ g: makeGlider(), trail: makeTrail(), curve: landCurve, t: 0.35, out: false, id: 'ANGEL-07', seeding: false, acc: 0, land: true, landed: false, lane: 2 });
+  gliders.push({ g: makeGlider(), trail: makeTrail(), curve: landCurve, t: 0.35, out: false, id: 'ANGEL-07', seeding: false, acc: 0, land: true, landed: false, lane: 2, cruise: 48 });
   // ANGEL-08 uses the secondary method: the mag-lev catapult on the east runway, then a steep climb
   const catCurve = new T.CatmullRomCurve3([
     [P.x + 27, 2.2, CAT_Z], [P.x + 42, 2.2, CAT_Z], [P.x + 58, 2.5, CAT_Z], [P.x + 68, 9, CAT_Z - 0.5], [P.x + 74, 22, CAT_Z - 4],
@@ -2123,7 +2154,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     [IC.x - 10, 6.5, IC.z + 2], [IC.x - 2, 7, IC.z + 14], [IC.x + 18, 16, IC.z + 18], [-20, 22, 46], [40, 20, 36], [96, 12, 4],
     [P.x + 80, 5, CAT_Z], [P.x + 60, 2.4, CAT_Z], [P.x + 44, 2.2, CAT_Z], [P.x + 29, 2.2, CAT_Z - 0.3]
   ].map(([x, y, z]) => new T.Vector3(x, y, z)), true, 'centripetal');
-  gliders.push({ g: makeGlider(), trail: makeTrail(), curve: catCurve, t: 0.62, out: false, id: 'ANGEL-08', seeding: false, acc: 0, cat: true, launching: false });
+  gliders.push({ g: makeGlider(), trail: makeTrail(), curve: catCurve, t: 0.62, out: false, id: 'ANGEL-08', seeding: false, acc: 0, cat: true, launching: false, cruise: 48 });
   // Route markers: where the pitch-over ends, the bend starts, the push-out fires and its burst fades. Scramjets
   // light at the push-out (Mach 3 at the base of the J), or for the catapult at stratospheric insertion.
   const firstT = (curve, test) => { for (let t = 0; t < 0.6; t += 0.0005) if (test(curve.getPointAt(t))) return t; return 0.05; };
@@ -2145,7 +2176,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     box(4.6, 0.3, 0.5, M.trim, P.x + dx * HANG_R, SY - 0.45, P.z + dz * HANG_R).rotation.y = -Math.atan2(dz, dx);
     [-1.3, 1.3].forEach((o) => box(0.28, 0.8, 0.28, M.steel, P.x + dx * (HANG_R + o), SY - 1.25, P.z + dz * (HANG_R + o)));
   });
-  const inIsland = (x, z) => RECTS.some(([x0, z0, x1, z1]) => x > x0 && x < x1 && z > z0 && z < z1);
+
 
   // Seed particles
   const SEEDS = 260;
@@ -2506,10 +2537,9 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       const o = i * 3;
       s.vy -= 6 * dt;
       seedPos[o] += s.vx * dt; seedPos[o + 1] += s.vy * dt; seedPos[o + 2] += s.vz * dt;
-      if (seedPos[o + 1] <= TOP + 0.2) {
+      const t = tileAt(seedPos[o], seedPos[o + 2]);
+      if (seedPos[o + 1] <= (t ? t.h : 0) + 0.2) {
         s.live = false; seedPos[o + 1] = -99; sim.seeds++;
-        const key = `${Math.floor((seedPos[o] + 48) / 2) * 2 - 47},${Math.floor((seedPos[o + 2] + 36) / 2) * 2 - 35}`;
-        const t = tileMap.get(key);
         if (t && t.grow === 0 && !t.growing && ++t.hits >= 9) t.growing = true;
       }
     });
