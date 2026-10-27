@@ -63,7 +63,11 @@ Leviathans replace the spar-buoy hubs as research sub-hubs (moon pools, manned s
   residential, arcology, foundry, and an enclosed shipyard (basin cut through the deck, walls, translucent roof,
   a lift gate between two towers, gantry; the viewer-facing wall is a glass curtain so the refit Leviathan at
   `HARBOR` shows). The basin runs out through the pier's square tip as a channel to the sea (user: the end must be a
-  door to the ocean); every 48 s the gate lifts and the Leviathan sails out for sea trials and back. The wave
+  door to the ocean). The Leviathan stays in for refit (user: show work instead of sailing out): the hall gantry
+  moves between spots on the hull, lowers a plate and welding sparks flicker (`HARBOR.yard`). Beyond the pier tips, a
+  quay (`DOCK_Z`) joins the foundry and shipyard tips (stopping short of the sea channel) and closes their bay into
+  a harbor; three finger piers hold two berthed Leviathans (one in scaffolding), jib cranes (`dockCranes`) swing
+  containers from the stacks onto the ships, and supply ships and tugs (`makeShip`) are moored inside and out. The wave
   farm sits in the bay between the flight and rectenna piers. Whites are toned down (ceramic #e3e8ee, hemi 0.88)
   after the user found the city too bright. Towers use `tower()`: one striped glazing mesh (`M.bands`, alpha-map
   stripes) instead of stacked bands, to keep the mesh count down. The mainland sits at the map edge (coast ~x -300,
