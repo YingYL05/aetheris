@@ -1036,7 +1036,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       live: () => ['Seeders airborne', `${sim.airborne} of 8 shown`] },
     { id: 'port', short: 'Earth Port', focus: [P.x + 20, 2, P.z - 2], ext: [100, 64], pin: [P.x + 6, 6, P.z + 7],
       code: 'AETH//01-A', title: 'Earth Port mega-city',
-      body: 'An artificial archipelago of titanium and ceramic, about the size of New York City, anchored in the calmest stretch of the equatorial Pacific. The model shows its core.',
+      body: 'An artificial archipelago of titanium and ceramic, about the size of New York City, anchored in the calmest stretch of the equatorial Pacific. The model shows its heart: a raised hub around the tether anchor and the piers that grow out of it.',
       specs: [['Footprint', '~780 km², artificial archipelago'], ['Foundries', 'Lower-deck printing bays: shade panels to scramjet parts'], ['Runways', 'Titanium airstrips over the ocean for glider servicing'], ['Power', 'Orbital microwave beaming, wave motion, OTEC'], ['Supply', 'Off-grid, no external fuel lines']],
       live: () => ['Climbers on tether', '4'] },
     { id: 'aura', short: 'Aura Core', focus: [P.x - 4, 3, P.z + 3], ext: [26, 18], pin: [P.x - 4, 6.5, P.z + 3],
@@ -1069,7 +1069,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
       body: 'Gliders fly out at Mach 6+ on hydrogen, leaving only a water-vapor trail, and release canisters 1,000 m above burned land. They glide home on solar wings, then dock on the Midway rail or land on an Earth Port runway. Watch the island turn green.',
       specs: [['Fleet', '48 autonomous gliders, ceramic-white composite'], ['Outbound', 'Mag-drop J-curve to 26 km, scramjets at Mach 3, cruise Mach 6+'], ['Return', 'Solar glide on metamaterial wings, electric turbines'], ['Payload', 'Fungal spore matrices and mycorrhizae, growth bio-catalysts, native soil microbiota'], ['Recovery', 'Rail docking at 30 km, or a runway landing for servicing']],
       live: () => ['Island regrown', `${sim.tilesTotal ? Math.round(sim.tilesRegrown / sim.tilesTotal * 100) : 0}%`] },
-    { id: 'mainland', short: 'Mainland', focus: [-146, 2, 8], ext: [128, 82], pin: [-128, 4, -8],
+    { id: 'mainland', short: 'Mainland', focus: [-330, 2, 8], ext: [128, 82], pin: [-312, 4, -8],
       code: 'AETH//01-H', title: 'Over the mainland coast',
       body: 'Seeding routes cross the mainland at cruise altitude, over coastal towns, farmland and the ridge behind them, then swing back out to sea and drop to 1,000 m over the burn scar. All they leave behind is a water-vapor trail.',
       specs: [['Cruise', 'Mach 6 in the upper stratosphere, above weather and air traffic'], ['Trail', 'Water vapor only'], ['Map', 'Coast and ridge shown, not to scale']],
@@ -1130,8 +1130,8 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const TAGS = [
     { text: '30 km · Midway', at: [P.x + 13, (2.4 + MIDWAY_Y) / 2, P.z] },
     { text: 'Wave farm · power', at: [P.x + 31, 1.5, P.z + 21] },
-    { text: 'Foundry district', at: [P.x - 40, 13, P.z - 54] },
-    { text: 'Harbor · Leviathan refit', at: [P.x - 12, 14, P.z - 66] },
+    { text: 'Foundry pier', at: [P.x - 15, 14, P.z - 37] },
+    { text: 'Harbor · Leviathan refit', at: [P.x + 27, 14, P.z - 29] },
     { text: '↑ Apex Station · GEO 36,000 km', at: [P.x + 1.5, MIDWAY_Y + 14, P.z] },
     { text: 'L1 · ~1.5M km · not to scale', at: [L1P.x, L1P.y - 6, L1P.z] }
   ].map((t) => { const el = document.createElement('span'); el.className = 'tag mono'; el.textContent = t.text; pinsEl.appendChild(el); return { ...t, el }; });
@@ -1516,110 +1516,135 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   box(3.3, 0.3, 2.5, M.trim, P.x + 24.4, DECK + 1.6, RZ + 4.4);
 
   // Earth Port mega-city: satellite islands of the archipelago, bridged to the core
-  // Inner districts around the core, then an outer ring of bigger ones: arcology towers, the foundry, the harbor
-  const CITY = [[-25, -14, 12], [-4, -29, 11], [27, -11, 12, 'rectenna'], [-23, 23, 11], [6, 31, 12],
-    [-60, -8, 15, 'arcology'], [-40, -54, 14, 'foundry'], [10, -66, 14, 'harbor'], [52, -48, 13], [-72, -44, 12]];
+  // Earth Port mega-city as one connected structure, in the Atlantis manner: a raised hub ring around the core and
+  // long piers growing out of it, each its own district. The water between piers forms sheltered bays.
   const parkTrees = [];
-  const CORE_R = 10;
   let HARBOR = null;
-  CITY.forEach(([dx, dz, r, kind = 'city'], ci) => {
-    const cx = P.x + dx, cz = P.z + dz, d = Math.hypot(dx, dz), rot = Math.PI / 6 + ci * 0.7;
-    for (let k = 0; k < 6; k++) {
-      const a = k * Math.PI / 3 + rot;
-      cyl(0.8, 0.8, DEPTH + 0.2, M.ceramic, cx + Math.cos(a) * r * 0.7, -DEPTH, cz + Math.sin(a) * r * 0.7, 10);
+  const stripeCv = document.createElement('canvas');
+  stripeCv.width = 2; stripeCv.height = 16;
+  { const c2 = stripeCv.getContext('2d'); c2.fillStyle = '#000'; c2.fillRect(0, 0, 2, 16); c2.fillStyle = '#fff'; c2.fillRect(0, 0, 2, 5); }
+  const stripeTex = new T.CanvasTexture(stripeCv);
+  stripeTex.wrapS = stripeTex.wrapT = T.RepeatWrapping; stripeTex.magFilter = T.NearestFilter;
+  M.bands = new T.MeshStandardMaterial({ alphaMap: stripeTex, alphaTest: 0.5, roughness: 0.3 });
+  // A glass tower: ceramic shaft, banded glazing as one mesh (the stripes come from the alpha map), roof cap, plant, mast
+  function tower(x, z, w, h, base, parent = world) {
+    box(w, h, w, M.ceramic, x, base, z, parent);
+    const gh = h - 1.2, g = new T.BoxGeometry(w + 0.08, gh, w + 0.08), uv = g.attributes.uv;
+    for (let k = 0; k < uv.count; k++) uv.setY(k, uv.getY(k) * gh / 1.6);
+    const glz = new T.Mesh(g, M.bands);
+    glz.position.set(x, base + 0.6 + gh / 2, z); glz.receiveShadow = true; parent.add(glz);
+    box(w + 0.14, 0.3, w + 0.14, M.trim, x, base + h, z, parent);
+    box(w * 0.4, 0.7, w * 0.3, M.trim, x - w * 0.15, base + h + 0.3, z + w * 0.15, parent);
+    if (h > 12) cyl(0.05, 0.05, 2 + h * 0.06, M.steel, x + w * 0.28, base + h + 0.3, z - w * 0.28, 5, parent);
+  }
+  function lowRise(x, z, w, d, h, base, parent) {
+    box(w, h, d, M.ceramic, x, base, z, parent);
+    box(w * 0.4, 0.5, d * 0.4, M.trim, x, base + h, z, parent);
+    if (h > 2) box(w + 0.05, 0.32, d + 0.05, M.glass, x, base + h * 0.55, z, parent);
+  }
+  const HUB_R = 23, HUB_TOP = 1.9, ARM_TOP = 1.6;
+  // Hub: a twelve-sided ring deck a step above the piers, the tallest spires standing round the core
+  cyl(HUB_R, HUB_R, HUB_TOP - 0.2, M.ceramic, P.x, 0.2, P.z, 12);
+  cyl(HUB_R + 0.15, HUB_R + 0.15, 0.3, M.trim, P.x, HUB_TOP - 0.45, P.z, 12);
+  for (let k = 0; k < 12; k++) { const a = (k + 0.5) * Math.PI / 6; cyl(0.9, 0.9, DEPTH + 0.3, M.ceramic, P.x + Math.cos(a) * 18, -DEPTH, P.z + Math.sin(a) * 18, 10); }
+  for (let k = 0; k < 12; k++) {
+    const a = (k + 0.5) * Math.PI / 6, r = 15 + (k % 2) * 3.5, x = P.x + Math.cos(a) * r, z = P.z + Math.sin(a) * r;
+    const deg = (a * 180 / Math.PI) % 360;
+    if (x > -2 && z > 2 && z < 16) continue;   // runway, apron and hangar
+    if (deg > 60 && deg < 190) {
+      // Low over the side the landing glider climbs out across; a park instead of spires
+      if (k % 2) { cyl(3.2, 3.2, 0.08, M.park, x, HUB_TOP, z, 20); for (let t = 0; t < 7; t++) { const ta = rand() * 6.28, tr = rand() * 2.4; parkTrees.push([x + Math.cos(ta) * tr, HUB_TOP + 0.05, z + Math.sin(ta) * tr, 0.55 + rand() * 0.4]); } }
+      else tower(x, z, 2.8, 8 + rand() * 6, HUB_TOP);
+      continue;
     }
-    cyl(r, r, 1.4, M.ceramic, cx, 0.2, cz, 6).rotation.y = rot;
-    cyl(r + 0.12, r + 0.12, 0.25, M.trim, cx, 1.4, cz, 6).rotation.y = rot;
-    // Inner districts bridge to the core; outer ones to the nearest district already built
-    const near = (list) => list.reduce((b, c) => (Math.hypot(c[0] - dx, c[1] - dz) < Math.hypot(b[0] - dx, b[1] - dz) ? c : b));
-    const [tx, tz, tr] = ci < 5 ? [0, 0, CORE_R] : near(CITY.slice(0, ci));
-    const bd = Math.hypot(dx - tx, dz - tz), ux = (tx - dx) / bd, uz = (tz - dz) / bd, blen = bd - r - tr + 2;
-    box(blen, 0.35, 2, M.trim, cx + ux * (r - 1 + blen / 2), 1.25, cz + uz * (r - 1 + blen / 2)).rotation.y = -Math.atan2(uz, ux);
-    for (let k = 7; k < blen - 6; k += 7) cyl(0.35, 0.35, DEPTH + 1.3, M.ceramic, cx + ux * (r - 1 + k), -DEPTH, cz + uz * (r - 1 + k), 8);
-    // Road markings across the deck
-    const road = box(r * 1.5, 0.04, 0.22, M.trim, cx, 1.62, cz); road.rotation.y = rot;
-    const road2 = box(0.22, 0.04, r * 1.5, M.trim, cx, 1.62, cz); road2.rotation.y = rot;
-    if (kind === 'rectenna') {
-      // Rectenna field: receivers for orbital microwave power beaming
-      for (let i = -2; i <= 2; i++) for (let j = -1; j <= 1; j++) {
-        const x = cx + i * 3.2, z = cz + j * 3.6;
-        cyl(0.12, 0.12, 0.8, M.steel, x, 1.65, z, 6);
-        const dish = cyl(1.2, 1.2, 0.12, M.trim, x, 2.4, z, 16);
-        dish.rotation.x = -0.5; dish.rotation.z = 0.5;
+    tower(x, z, 3 + rand() * 1.4, 20 + rand() * 14, HUB_TOP);
+  }
+  // Piers: angle (deg), length, width, side wing (+/- across, 0 for none), district
+  const ARMS = [
+    { a: 205, L: 62, w: 16, b: -7, kind: 'arcology' },
+    { a: 248, L: 58, w: 16, b: 0, kind: 'foundry' },
+    { a: 292, L: 62, w: 15, b: 0, kind: 'harbor' },
+    { a: 340, L: 42, w: 13, b: 0, kind: 'rectenna' },
+    { a: 70, L: 42, w: 14, b: 6, kind: 'city' },
+    { a: 125, L: 54, w: 16, b: 7, kind: 'city' }
+  ];
+  ARMS.forEach(({ a, L, w, b, kind }) => {
+    const ang = a * Math.PI / 180, ux = Math.cos(ang), uz = Math.sin(ang);
+    const toWorld = (u, v) => [P.x + ux * u - uz * v, P.z + uz * u + ux * v];   // pier frame: u out along it, v across
+    const grp = new T.Group();
+    grp.position.set(P.x, 0, P.z); grp.rotation.y = -ang; world.add(grp);
+    const w2 = w / 2, B = Math.abs(b), sv = b < 0 ? -1 : 1;
+    let pts = [[16, -w2], [L - w2 * 1.2, -w2], [L, -w2 * 0.3], [L, w2 * 0.3], [L - w2 * 1.2, w2]];
+    if (B) pts.push([0.86 * L, w2], [0.8 * L, w2 + B], [0.56 * L, w2 + B], [0.5 * L, w2]);
+    pts.push([16, w2]);
+    if (sv < 0) pts = pts.map(([u, v]) => [u, -v]);
+    const deckGeo = new T.ExtrudeGeometry(new T.Shape(pts.map(([u, v]) => new T.Vector2(u, v))), { depth: ARM_TOP - 0.2, bevelEnabled: false });
+    deckGeo.rotateX(Math.PI / 2); deckGeo.translate(0, ARM_TOP, 0);
+    grp.add(shade(new T.Mesh(deckGeo, [M.ceramic, M.trim])));
+    for (let u = 26; u < L - 3; u += 9) cyl(0.8, 0.8, DEPTH + 0.3, M.ceramic, u, -DEPTH, 0, 10, grp);
+    if (B) cyl(0.8, 0.8, DEPTH + 0.3, M.ceramic, 0.68 * L, -DEPTH, sv * (w2 + B / 2), 10, grp);
+    box(L - 24, 0.04, 0.3, M.trim, (L + 22) / 2, ARM_TOP, 0, grp);
+    const wingPark = () => {
+      if (!B) return;
+      const pu = 0.68 * L, pv = sv * (w2 + B / 2);
+      cyl(B * 0.55, B * 0.55, 0.08, M.park, pu, ARM_TOP, pv, 20, grp);
+      for (let t = 0; t < 9; t++) {
+        const ta = rand() * 6.28, tr = rand() * B * 0.45, [x, z] = toWorld(pu + Math.cos(ta) * tr, pv + Math.sin(ta) * tr);
+        parkTrees.push([x, ARM_TOP + 0.05, z, 0.55 + rand() * 0.45]);
       }
-      return;
-    }
-    if (kind === 'foundry') {
-      // Printing bays: long halls under sawtooth roofs, a gantry, and two stacks venting clean heat
-      for (let k = -1; k <= 1; k++) {
-        const hz = cz + k * 4.6;
-        box(r * 1.15, 3.6, 3.6, M.ceramic, cx, 1.65, hz);
-        box(r * 1.15 + 0.06, 0.4, 3.66, M.glass, cx, 3.6, hz);
-        for (let t = 0; t < 6; t++) {
-          const tooth = shade(new T.Mesh(new T.CylinderGeometry(0.75, 0.75, 3.6, 3), M.trim));
-          tooth.rotation.x = Math.PI / 2; tooth.position.set(cx - r * 0.575 + (t + 0.5) * r * 1.15 / 6, 5.6, hz); world.add(tooth);
+    };
+    if (kind === 'city' || kind === 'arcology') {
+      // Towers either side of the spine, tallest near the hub; low-rise between them
+      const tall = kind === 'arcology';
+      let side = 1;
+      for (let u = 27; u < L - 6; u += tall ? 5.5 : 6.5) {
+        const fall = 1.25 - (u / L) * 0.55, tw = tall ? 3 + rand() * 1.4 : 2.4 + rand() * 1;
+        tower(u, side * w2 * 0.5, tw, (tall ? 16 + rand() * 14 : 8 + rand() * 9) * fall, ARM_TOP, grp);
+        if (tall && rand() < 0.6) tower(u + 2, -side * w2 * 0.5, tw * 0.85, (12 + rand() * 10) * fall, ARM_TOP, grp);
+        else lowRise(u + 1, -side * w2 * 0.5, 3 + rand() * 1.4, 2.6, 1.4 + rand() * 2.4, ARM_TOP, grp);
+        side = -side;
+      }
+      wingPark();
+    } else if (kind === 'foundry') {
+      // Printing bays: two long halls under sawtooth roofs, a gantry over the yard, and two stacks venting clean heat
+      const u0 = 25, u1 = L - 12, len = u1 - u0;
+      [-3.4, 3.4].forEach((v) => {
+        box(len, 3.6, 4.4, M.ceramic, (u0 + u1) / 2, ARM_TOP, v, grp);
+        box(len + 0.06, 0.4, 4.46, M.glass, (u0 + u1) / 2, ARM_TOP + 2, v, grp);
+        for (let u = u0 + 1.3; u < u1; u += 2.6) {
+          const tooth = shade(new T.Mesh(new T.CylinderGeometry(0.75, 0.75, 4.4, 3), M.trim));
+          tooth.rotation.x = Math.PI / 2; tooth.position.set(u, ARM_TOP + 3.95, v); grp.add(tooth);
         }
-      }
-      [-1, 1].forEach((k) => {
-        cyl(0.75, 1, 12, M.ceramic, cx + k * r * 0.48, 1.65, cz + r * 0.62, 14);
-        cyl(0.8, 0.8, 0.5, M.glow, cx + k * r * 0.48, 13.2, cz + r * 0.62, 14);
       });
-      [-1, 1].forEach((k) => box(0.5, 8, 0.5, M.trim, cx + k * r * 0.62, 1.65, cz - r * 0.55));
-      box(r * 1.3, 0.6, 0.7, M.trim, cx, 9.6, cz - r * 0.55);
-      return;
-    }
-    if (kind === 'harbor') {
-      // Quay, container yard and a slip with two gantry cranes; a Leviathan sits in it for refit (added with the fleet)
-      HARBOR = { x: cx - r - 8, z: cz };
-      box(4, 0.5, 20, M.ceramic, cx - r - 1, 1.0, cz);
-      [-6, 6].forEach((oz) => {
-        [-6, 6].forEach((ox) => box(0.6, 12.4, 0.6, M.trim, HARBOR.x + ox, 0.2, cz + oz));
-        box(13.2, 0.8, 0.9, M.trim, HARBOR.x, 12.4, cz + oz);
-        box(1.6, 1, 1.6, M.steel, HARBOR.x - 2 + oz * 0.3, 11.6, cz + oz);
+      [-3.4, 3.4].forEach((v) => {
+        cyl(0.75, 1, 12, M.ceramic, L - 7, ARM_TOP, v, 14, grp);
+        cyl(0.8, 0.8, 0.5, M.glow, L - 7, ARM_TOP + 11.6, v, 14, grp);
+      });
+      [-1, 1].forEach((k) => box(0.5, 8, 0.5, M.trim, 21, ARM_TOP, k * (w2 - 1), grp));
+      box(0.7, 0.6, w, M.trim, 21, ARM_TOP + 8, 0, grp);
+    } else if (kind === 'harbor') {
+      // Container yard and warehouse on the pier; a slip off its side with two gantry cranes, where a Leviathan
+      // sits for refit (added with the fleet)
+      const su = 0.6 * L, svv = w2 + 6.5;
+      const [hx, hz] = toWorld(su, svv);
+      HARBOR = { x: hx, z: hz, yaw: Math.atan2(ux, uz) };
+      [-6, 6].forEach((du) => {
+        [-6, 6].forEach((dv) => box(0.6, 12.4, 0.6, M.trim, su + du, 0.2, svv + dv, grp));
+        box(0.9, 0.8, 13.2, M.trim, su + du, 12.4, svv, grp);
+        box(1.6, 1, 1.6, M.steel, su + du, 11.6, svv - 2 + du * 0.3, grp);
       });
       const STACK = [M.trim, M.glass, M.steel];
-      for (let i = 0; i < 5; i++) for (let j = 0; j < 3; j++) {
-        const h = 1 + Math.floor(rand() * 3) * 1.05;
-        box(2.6, h, 1.2, STACK[(i + j) % 3], cx - 3 + i * 2.9, 1.65, cz - 3.5 + j * 1.6);
+      for (let i = 0; i < 5; i++) for (let j = 0; j < 3; j++) box(2.6, 1 + Math.floor(rand() * 3) * 1.05, 1.2, STACK[(i + j) % 3], 26 + i * 2.9, ARM_TOP, -w2 * 0.55 + j * 1.6, grp);
+      box(10, 3.4, 5, M.ceramic, L - 10, ARM_TOP, 0, grp);
+      box(10.06, 0.4, 5.06, M.glass, L - 10, ARM_TOP + 2, 0, grp);
+      tower(30, w2 * 0.45, 2.6, 10 + rand() * 5, ARM_TOP, grp);
+    } else if (kind === 'rectenna') {
+      // Rectenna field: receivers for orbital microwave power beaming, out to the catapult runway
+      for (let u = 25; u < L - 3; u += 4) for (let v = -3.6; v <= 3.6; v += 3.6) {
+        cyl(0.12, 0.12, 0.8, M.steel, u, ARM_TOP, v, 6, grp);
+        const dish = cyl(1.2, 1.2, 0.12, M.trim, u, ARM_TOP + 0.75, v, 16, grp);
+        dish.rotation.x = -0.5; dish.rotation.z = 0.5;
       }
-      box(9, 3.4, 5, M.ceramic, cx + 2, 1.65, cz + 5);
-      box(9.06, 0.4, 5.06, M.glass, cx + 2, 3.6, cz + 5);
-      return;
-    }
-    // Park: lawn and a cluster of trees on one side of the island
-    const pa = rand() * Math.PI * 2, px = cx + Math.cos(pa) * r * 0.42, pz = cz + Math.sin(pa) * r * 0.42;
-    cyl(r * 0.34, r * 0.34, 0.08, M.park, px, 1.62, pz, 20);
-    for (let k = 0; k < 10; k++) { const ta = rand() * Math.PI * 2, tr = rand() * r * 0.28; parkTrees.push([px + Math.cos(ta) * tr, 1.7, pz + Math.sin(ta) * tr, 0.55 + rand() * 0.45]); }
-    // Buildings on the other side: low-rise blocks around glass towers (a full skyline on the arcology)
-    const placed = kind === 'arcology' ? [[px, pz, r * 0.6]] : [];
-    const tryPlace = (w, h, minR, maxR, arc = 2.6) => {
-      for (let n = 0; n < 30; n++) {
-        const a = pa + Math.PI + (rand() - 0.5) * arc, rr = r * (minR + rand() * (maxR - minR));
-        const x = cx + Math.cos(a) * rr, z = cz + Math.sin(a) * rr;
-        if (placed.some(([px2, pz2, w2]) => Math.abs(px2 - x) < (w + w2) / 2 + 0.8 && Math.abs(pz2 - z) < (w + w2) / 2 + 0.8)) continue;
-        placed.push([x, z, w]);
-        return [x, z];
-      }
-      return null;
-    };
-    const arc = kind === 'arcology';
-    const towers = arc ? 7 : 2 + Math.floor(rand() * 2);
-    for (let k = 0; k < towers; k++) {
-      const w = arc ? 3 + rand() * 1.6 : 2.4 + rand() * 1.2, h = arc ? 14 + rand() * 16 : 9 + rand() * 11;
-      const at = tryPlace(w, h, 0.05, arc ? 0.66 : 0.4, arc ? 6.2 : 2.6);
-      if (!at) continue;
-      box(w, h, w, M.ceramic, at[0], 1.65, at[1]);
-      for (let y = 2.8; y < h + 1; y += 1.6) box(w + 0.06, 0.45, w + 0.06, M.glass, at[0], y, at[1]);
-      box(w + 0.12, 0.3, w + 0.12, M.trim, at[0], 1.65 + h, at[1]);
-      box(w * 0.4, 0.7, w * 0.3, M.trim, at[0] - w * 0.15, 1.95 + h, at[1] + w * 0.15);
-      cyl(0.05, 0.05, 1.8, M.steel, at[0] + w * 0.28, 1.95 + h, at[1] - w * 0.28, 5);
-    }
-    for (let k = 0; k < 6; k++) {
-      const w = 2 + rand() * 2.2, d2 = 1.8 + rand() * 1.6, h = 1.2 + rand() * 2.4, at = tryPlace(Math.max(w, d2), h, 0.2, 0.72);
-      if (!at) continue;
-      box(w, h, d2, M.ceramic, at[0], 1.65, at[1]).rotation.y = rot;
-      box(w * 0.4, 0.5, d2 * 0.4, M.trim, at[0], 1.65 + h, at[1]).rotation.y = rot;
-      if (h > 2) box(w + 0.05, 0.32, d2 + 0.05, M.glass, at[0], 1.65 + h * 0.55, at[1]).rotation.y = rot;
     }
   });
   // Second titanium airstrip from the east island
@@ -1653,16 +1678,16 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   plantTrees(hillTrees, hills);
   // Mainland coast west of the burned island: beach, farmland, forest and a ridge that a seeding route crosses.
   // Heights come from a few sines; offshore it shelves down under the water to the seabed.
-  const coastAt = (z) => -116 + Math.sin(z * 0.045) * 7 + Math.sin(z * 0.11 + 1.3) * 3.5;
+  const coastAt = (z) => -300 + Math.sin(z * 0.045) * 7 + Math.sin(z * 0.11 + 1.3) * 3.5;
   function landH(x, z) {
     const inland = coastAt(z) - x;
     if (inland < 0) return Math.max(-DEPTH - 0.5, inland * 1.1);
     const roll = Math.sin(x * 0.07 + z * 0.05) * 1.6 + Math.sin(x * 0.13 - z * 0.09 + 2) * 1.1 + Math.sin(z * 0.21) * 0.5;
-    const ridge = Math.max(0, 1 - Math.abs(x + 178 - Math.sin(z * 0.03) * 10) / 26);
+    const ridge = Math.max(0, 1 - Math.abs(x + 362 - Math.sin(z * 0.03) * 10) / 26);
     return Math.min(inland * 0.3, 1) + Math.max(0, roll) * Math.min(1, inland / 22) + ridge * ridge * (17 + Math.sin(z * 0.17) * 4 + Math.sin(z * 0.41) * 2);
   }
-  const LX0 = -250, LX1 = -100, LZ0 = -170, LZ1 = 200;
-  const landGeo = new T.PlaneGeometry(LX1 - LX0, LZ1 - LZ0, 75, 185);
+  const LX0 = -560, LX1 = -270, LZ0 = -420, LZ1 = 420;
+  const landGeo = new T.PlaneGeometry(LX1 - LX0, LZ1 - LZ0, 73, 210);
   landGeo.rotateX(-Math.PI / 2);
   landGeo.translate((LX0 + LX1) / 2, 0, (LZ0 + LZ1) / 2);
   {
@@ -1683,7 +1708,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   // Field patchwork on the coastal plain, forest on the slopes, a small town with a pier and a lighthouse
   const fields = [];
   for (let n = 0; n < 1500 && fields.length < 150; n++) {
-    const z = LZ0 + 40 + rand() * (LZ1 - LZ0 - 80), x = coastAt(z) - 6 - rand() * 44, y = landH(x, z);
+    const z = -190 + rand() * 420, x = coastAt(z) - 6 - rand() * 44, y = landH(x, z);
     if (y < 0.7 || y > 3.2 || (z > 0 && z < 34 && x > coastAt(z) - 16) || fields.some((f) => Math.abs(f.x - x) < 4.6 && Math.abs(f.z - z) < 3.8)) continue;
     fields.push({ x, y, z, w: 3.4 + rand() * 1.4, d: 2.6 + rand() * 1.2, a: (rand() - 0.5) * 0.4, c: [0x8fa85a, 0x6f9a4c, 0xb09d58, 0x648f47][Math.floor(rand() * 4)] });
   }
@@ -1696,8 +1721,8 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   });
   hills.add(fieldMesh);
   const forest = [];
-  for (let n = 0; n < 2500 && forest.length < 320; n++) {
-    const z = LZ0 + 30 + rand() * (LZ1 - LZ0 - 60), x = LX0 + 30 + rand() * (coastAt(z) - LX0 - 34), y = landH(x, z);
+  for (let n = 0; n < 3000 && forest.length < 360; n++) {
+    const z = -210 + rand() * 460, x = coastAt(z) - 4 - rand() * 100, y = landH(x, z);
     if (y > 2.6 && y < 10) forest.push([x, y - 0.2, z, 0.7 + rand() * 0.45]);
   }
   plantTrees(forest, hills);
@@ -1927,7 +1952,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     // Out over the mainland: across the coast, the farmland and the ridge, then back out to sea to seed
     route([
       ...DROP.map(([d, y]) => atLane(1, d, y)),
-      [-90, 44, -26], [-150, 40, -22], [-184, 36, 22], [-140, 22, 58], [IC.x - 14, 8, IC.z + 10], [IC.x, 6.5, IC.z],
+      [-120, 44, -26], [-300, 42, -24], [-368, 38, 20], [-320, 30, 70], [-180, 16, 62], [IC.x - 14, 8, IC.z + 10], [IC.x, 6.5, IC.z],
       [IC.x + 12, 7, IC.z - 10], [IC.x + 22, 30, IC.z - 4], [-40, 48, 10], atLane(1, HANG_R + 16, SY - 4), atLane(1, HANG_R + 3, SY - 1.4)
     ])
   ];
@@ -1984,7 +2009,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   const gliders = [];
   loops.forEach((curve, li) => [0, 1, 2].forEach((k) => {
     const t = (k / 3 + li * 0.16) % 1;
-    gliders.push({ g: makeGlider(), trail: makeTrail(), curve, t, out: t < 0.45, id: `ANGEL-${String(li * 3 + k + 1).padStart(2, '0')}`, seeding: false, acc: 0, lane: li });
+    gliders.push({ g: makeGlider(), trail: makeTrail(), curve, t, out: t < 0.45, id: `ANGEL-${String(li * 3 + k + 1).padStart(2, '0')}`, seeding: false, acc: 0, lane: li, cruise: li ? 46 : 24 });
   }));
   const parked = makeGlider(1.1);
   parked.position.set(P.x + 20.2, DECK + 0.25, RZ + 3.8);
@@ -2107,7 +2132,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
   if (HARBOR) {
     const refit = lev.clone();
     refit.children.filter((c) => c.isLineSegments).forEach((c) => refit.remove(c));
-    refit.position.set(HARBOR.x, 0.05, HARBOR.z);
+    refit.position.set(HARBOR.x, 0.05, HARBOR.z); refit.rotation.y = HARBOR.yaw;
     world.add(refit);
   }
   const wideGyre = new T.CatmullRomCurve3(Array.from({ length: 12 }, (_, k) => {
@@ -2198,6 +2223,7 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     M.shade.color.setHex(pal.shade); M.shade.opacity = pal.shadeOp;
     M.beam.color.setHex(pal.accent); M.vortex.color.setHex(pal.accent);
     M.glow.color.setHex(pal.shade);
+    M.bands.color.setHex(pal.glass); M.bands.emissive.setHex(pal.accent); M.bands.emissiveIntensity = pal.glow * 0.35;
     laneFx.forEach((f) => { f.mat.color.setHex(pal.accent); f.lmat.color.setHex(pal.accent); f.ring.material.color.setHex(pal.accent); });
     M.crown.color.setHex(pal.crown); M.inst.color.setHex(0xffffff); M.park.color.setHex(0xd6e8cf);
     M.accent.emissive.setHex(pal.accent); M.accent.emissiveIntensity = pal.glow * 0.5;
@@ -2280,14 +2306,15 @@ body::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-event
     sim.airborne = 0;
     gliders.forEach((gl) => {
       const prevT = gl.t, cur = gl.g.position;
-      let speed = 24;
+      const base = gl.cruise && cur.y > 14 ? gl.cruise : 24;
+      let speed = base;
       if (gl.cat && cur.y < 3.2 && cur.x > P.x + 37 && Math.abs(cur.z - (P.z - 14)) < 2.5) {
         // On the catapult the sled ramps the speed up; on landing the roll-out slows it down
         speed = gl.launching ? 5 + (cur.x - (P.x + 38)) * 1.6 : 4 + (cur.x - (P.x + 38)) * 0.8;
       } else if (!gl.cat && gl.t < gl.tPush) {
         speed = 3 + Math.max(0, SY - 1.6 - cur.y) * 2.8;   // gravity builds speed down the tether and through the bend
       } else if (!gl.cat && gl.t < gl.tBlast) {
-        speed = 56 - 32 * (gl.t - gl.tPush) / (gl.tBlast - gl.tPush);   // the push-out, easing into cruise
+        speed = 56 - (56 - base) * (gl.t - gl.tPush) / (gl.tBlast - gl.tPush);   // the push-out, easing into cruise
       }
       if (gl.hold > 0) {
         gl.hold -= dt;
